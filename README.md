@@ -1,46 +1,75 @@
-# Sistem Informasi Akreditasi Rumah Sakit (SIARS)
+# SIARS - Sistem Informasi Akreditasi Rumah Sakit
 
-## Tentang SIARS
-
-Sistem Informasi Akreditasi Rumah Sakit (SIARS) adalah aplikasi berbasis web yang dirancang untuk membantu rumah sakit dalam mengelola dan memantau proses akreditasi berdasarkan standar SNARS (Standar Nasional Akreditasi Rumah Sakit). Sistem ini memudahkan rumah sakit untuk mendokumentasikan, melacak, dan melaporkan kepatuhan terhadap standar akreditasi yang ditetapkan.
+Aplikasi manajemen akreditasi rumah sakit yang memudahkan proses akreditasi SNARS dan manajemen risiko.
 
 ## Fitur Utama
 
-- **Manajemen Dokumen**: Pengelolaan dokumen kebijakan, prosedur, dan bukti pendukung akreditasi
-- **Monitoring Standar**: Pemantauan kepatuhan terhadap standar SNARS
-- **Penilaian Mandiri**: Evaluasi internal terhadap kesiapan akreditasi
-- **Manajemen Tindak Lanjut**: Pengelolaan temuan dan rencana perbaikan
-- **Dashboard Eksekutif**: Visualisasi status akreditasi secara real-time
-- **Manajemen Pengguna**: Pengaturan hak akses berdasarkan peran dan tanggung jawab
+- Manajemen Akreditasi SNARS
+- Manajemen Risiko
+- Multi-tenant untuk beberapa rumah sakit
+- Multi-role (Superadmin, Tenant Admin, Manajemen Strategis, Manajemen Eksekutif, Manajemen Operasional, Staf)
+- Aktivasi dan manajemen modul
 
 ## Teknologi
 
-- **Framework**: Laravel
-- **Database**: MySQL
-- **Frontend**: Bootstrap, jQuery, dan Vue.js
-
-## Persyaratan Sistem
-
-- PHP >= 8.1
-- MySQL >= 5.7
-- Composer
-- Node.js dan NPM
+- Laravel
+- MySQL
+- Blade Templates
+- Spatie Permission
 
 ## Instalasi
 
-1. Clone repositori ini
-2. Jalankan `composer install`
-3. Salin file `.env.example` ke `.env` dan sesuaikan konfigurasi database
-4. Jalankan `php artisan key:generate`
-5. Jalankan `php artisan migrate`
-6. Jalankan `php artisan db:seed` untuk mengisi data awal
-7. Jalankan `npm install && npm run dev`
-8. Jalankan `php artisan serve` untuk memulai server pengembangan
+### Persyaratan
 
-## Kontribusi
+- PHP >= 8.1
+- Composer
+- MySQL atau database yang didukung Laravel
 
-Silakan berkontribusi dengan membuat pull request atau melaporkan masalah melalui issue tracker.
+### Langkah Instalasi
+
+1. Clone repositori ini:
+   ```
+   git clone [url-repository]
+   ```
+
+2. Pindah ke direktori proyek:
+   ```
+   cd siars
+   ```
+
+3. Instal dependensi dengan Composer:
+   ```
+   composer install
+   ```
+
+4. Salin file .env.example menjadi .env:
+   ```
+   cp .env.example .env
+   ```
+
+5. Generate application key:
+   ```
+   php artisan key:generate
+   ```
+
+6. Konfigurasi database di file .env
+
+7. Jalankan migrasi dan seeder:
+   ```
+   php artisan migrate --seed
+   ```
+
+8. Jalankan server pengembangan:
+   ```
+   php artisan serve
+   ```
+
+## Kredensial Default
+
+### Superadmin
+- Email: superadmin@example.com
+- Password: password
 
 ## Lisensi
 
-SIARS adalah perangkat lunak berpemilik yang dikembangkan untuk penggunaan internal rumah sakit.
+[MIT License](LICENSE)
