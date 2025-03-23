@@ -11,7 +11,7 @@ class RiskReviewController extends Controller
      */
     public function index()
     {
-        //
+        return view('risk-management.reviews.index');
     }
 
     /**
@@ -19,7 +19,7 @@ class RiskReviewController extends Controller
      */
     public function create()
     {
-        //
+        return view('risk-management.reviews.create');
     }
 
     /**
@@ -27,7 +27,19 @@ class RiskReviewController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi input
+        $validated = $request->validate([
+            'category_id' => 'required|exists:risk_categories,id',
+            'description' => 'required|string',
+            'impact' => 'required|integer|min:1|max:5',
+            'probability' => 'required|integer|min:1|max:5',
+            'mitigation' => 'required|string',
+        ]);
+
+        // Logika penyimpanan akan diimplementasikan sesuai kebutuhan
+
+        return redirect()->route('risk-management.reviews.index')
+            ->with('success', 'Penilaian risiko berhasil disimpan');
     }
 
     /**
@@ -35,7 +47,7 @@ class RiskReviewController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return view('risk-management.reviews.show', compact('id'));
     }
 
     /**
@@ -43,7 +55,7 @@ class RiskReviewController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('risk-management.reviews.edit', compact('id'));
     }
 
     /**
@@ -51,7 +63,19 @@ class RiskReviewController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Validasi input
+        $validated = $request->validate([
+            'category_id' => 'required|exists:risk_categories,id',
+            'description' => 'required|string',
+            'impact' => 'required|integer|min:1|max:5',
+            'probability' => 'required|integer|min:1|max:5',
+            'mitigation' => 'required|string',
+        ]);
+
+        // Logika update akan diimplementasikan sesuai kebutuhan
+
+        return redirect()->route('risk-management.reviews.index')
+            ->with('success', 'Penilaian risiko berhasil diperbarui');
     }
 
     /**
@@ -59,6 +83,8 @@ class RiskReviewController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // Method ini tidak diimplementasikan untuk mencegah penghapusan data
+        return redirect()->route('risk-management.reviews.index')
+            ->with('info', 'Penghapusan penilaian risiko tidak diperbolehkan');
     }
 }

@@ -1,7 +1,13 @@
 @php
-    $activeTenant = app(\App\Services\TenantSelectionService::class)->getActiveTenant();
-    $user = auth()->user();
-    $isSuperadmin = $user && $user->hasRole('Superadmin');
+    if(auth()->check()) {
+        $activeTenant = app(\App\Services\TenantSelectionService::class)->getActiveTenant();
+        $user = auth()->user();
+        $isSuperadmin = $user && $user->hasRole('Superadmin');
+    } else {
+        $activeTenant = null;
+        $user = null;
+        $isSuperadmin = false;
+    }
 @endphp
 
 @if($activeTenant)

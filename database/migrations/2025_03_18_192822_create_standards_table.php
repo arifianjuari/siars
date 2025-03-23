@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('standards', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('chapter_id')->constrained()->onDelete('cascade');
-            $table->string('code', 20);
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->text('objective')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('standards')) {
+            Schema::create('standards', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('chapter_id')->constrained()->onDelete('cascade');
+                $table->string('code', 20);
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->text('objective')->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
     }
 
     /**
