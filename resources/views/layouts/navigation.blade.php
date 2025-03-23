@@ -23,10 +23,6 @@
                                 {{ __('Modul') }}
                             </x-nav-link>
                             
-                            <x-nav-link :href="route('tenant.modules.index')" :active="request()->routeIs('tenant.modules.*')">
-                                {{ __('Modul Rumah Sakit') }}
-                            </x-nav-link>
-                            
                             <!-- Menu khusus untuk superadmin -->
                             @if(auth()->user()->hasRole('Superadmin'))
                                 <x-nav-link :href="route('module-activation.index')" :active="request()->routeIs('module-activation.*')">
@@ -137,10 +133,6 @@
                 @if($activeTenant)
                     <x-responsive-nav-link :href="route('modules.index')" :active="request()->routeIs('modules.*')">
                         {{ __('Modul') }}
-                    </x-responsive-nav-link>
-                    
-                    <x-responsive-nav-link :href="route('tenant.modules.index')" :active="request()->routeIs('tenant.modules.*')">
-                        {{ __('Modul Rumah Sakit') }}
                     </x-responsive-nav-link>
                     
                     @if(auth()->user()->hasRole('Superadmin'))
