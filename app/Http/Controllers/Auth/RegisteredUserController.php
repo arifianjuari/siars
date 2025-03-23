@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -41,10 +41,13 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Assign default role 'Staf' untuk pengguna baru
+        $user->assignRole('Staf');
+
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        // Jangan login user, arahkan ke halaman login dengan pesan
+        return redirect()->route('login')
+            ->with('status', 'Pendaftaran berhasil! Akun Anda akan ditinjau dan diaktifkan oleh Superadmin sebelum dapat digunakan.');
     }
 }
