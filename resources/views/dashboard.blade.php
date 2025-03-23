@@ -31,53 +31,6 @@
                 </a>
             </div>
 
-            <!-- Module Management (for Superadmin) -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <a href="{{ route('modules.index') }}" class="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <div class="flex items-center mb-4">
-                        <div class="flex-shrink-0 bg-green-100 dark:bg-green-900 p-3 rounded-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <h4 class="ml-4 text-lg font-medium text-gray-900 dark:text-gray-100">Manajemen Modul</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400">Kelola daftar modul sistem dan pengaturannya</p>
-                    <div class="mt-4 flex justify-end">
-                        <span class="text-green-600 dark:text-green-400 inline-flex items-center text-sm font-medium">
-                            Lihat Daftar Modul
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Module Administration (for Superadmin) -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="flex-shrink-0 bg-amber-100 dark:bg-amber-900 p-3 rounded-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="ml-4 text-lg font-medium text-gray-900 dark:text-gray-100">Administrasi Modul</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Kelola aktivasi modul dan permintaan dari rumah sakit</p>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('module-activation.index') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                            PERMINTAAN AKTIVASI
-                        </a>
-                        <a href="{{ route('tenant.modules.index') }}" class="inline-flex items-center px-4 py-2 bg-amber-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 focus:bg-amber-700 active:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                            KELOLA MODUL RS
-                        </a>
-                    </div>
-                </div>
-            </div>
-
             <!-- User Management (for Superadmin) -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <a href="{{ route('superadmin.users.index') }}" class="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -99,6 +52,37 @@
                         </span>
                     </div>
                 </a>
+            </div>
+
+            <!-- Module Administration -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0 bg-green-100 dark:bg-green-900 p-3 rounded-md">
+                            <svg class="h-6 w-6 text-green-600 dark:text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                        </div>
+                        <h4 class="ml-4 text-lg font-medium text-gray-900 dark:text-gray-100">Manajemen Modul</h4>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                        <a href="{{ route('superadmin.modules.index') }}" class="block p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                            <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Daftar Modul</h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Kelola modul sistem & rumah sakit</p>
+                        </a>
+                        
+                        <a href="{{ route('superadmin.modules.requests') }}" class="block p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                            <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Permintaan Aktivasi</h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Proses permintaan aktivasi modul</p>
+                        </a>
+                        
+                        <a href="{{ route('superadmin.module-permissions.index') }}" class="block p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                            <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Izin Modul</h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Kelola izin role untuk setiap modul</p>
+                        </a>
+                    </div>
+                </div>
             </div>
             @endif
 

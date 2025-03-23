@@ -6,6 +6,7 @@ use App\Models\Module;
 use App\Services\ModuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ModuleController extends Controller
 {
@@ -30,34 +31,40 @@ class ModuleController extends Controller
     /**
      * Menampilkan daftar modul yang tersedia
      *
-     * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function index(Request $request)
+    public function index()
     {
         $user = Auth::user();
-        $modules = $this->moduleService->getAllModules();
+        $isTenantAdmin = $user->hasRole('TenantAdmin');
 
-        // Filter modul yang dapat dilihat oleh user (superadmin dapat melihat semua)
-        if (!$user->isSuperadmin()) {
-            $modules = $modules->filter(function ($module) use ($user) {
-                return $user->canViewModule($module);
-            });
-        }
+        // Dapatkan semua modul yang aktif
+        $modules = Module::where('is_active', true)->get();
 
-        // Tambahkan informasi status modul untuk tenant
+        // Jika pengguna adalah tenant admin dan memiliki tenant_id
         if ($user->tenant_id) {
-            $modules = $modules->map(function ($module) use ($user) {
-                $isActive = $this->moduleService->isModuleActiveForTenant($module->id, $user->tenant_id);
-                $module->is_active_for_tenant = $isActive;
-                return $module;
+            // Dapatkan ID modul yang sudah aktif untuk tenant
+            $activeModuleIds = DB::table('tenant_modules')
+                ->where('tenant_id', $user->tenant_id)
+                ->where('is_active', true)
+                ->pluck('module_id')
+                ->toArray();
+
+            // Dapatkan ID modul yang sedang diproses permintaan aktivasinya
+            $pendingModuleIds = DB::table('module_activation_requests')
+                ->where('tenant_id', $user->tenant_id)
+                ->where('status', 'pending')
+                ->pluck('module_id')
+                ->toArray();
+
+            // Tandai masing-masing modul apakah sudah aktif untuk tenant pengguna
+            $modules->each(function ($module) use ($activeModuleIds, $pendingModuleIds) {
+                $module->is_active_for_tenant = in_array($module->id, $activeModuleIds);
+                $module->is_pending_activation = in_array($module->id, $pendingModuleIds);
             });
         }
 
-        return view('modules.index', [
-            'modules' => $modules,
-            'isTenantAdmin' => $user->hasRole('TenantAdmin')
-        ]);
+        return view('modules.index', compact('modules', 'isTenantAdmin'));
     }
 
     /**

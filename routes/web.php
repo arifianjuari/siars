@@ -299,6 +299,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/toggle/{moduleId}', [SuperadminModuleController::class, 'toggleStatus'])->name('toggle');
             Route::post('/process-request/{requestId}', [SuperadminModuleController::class, 'processRequest'])->name('process-request');
         });
+
+        // Route untuk manajemen role_module_permissions
+        Route::prefix('module-permissions')->name('module-permissions.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Superadmin\ModulePermissionController::class, 'index'])->name('index');
+            Route::get('/{roleId}/{moduleId}/edit', [App\Http\Controllers\Superadmin\ModulePermissionController::class, 'edit'])->name('edit');
+            Route::put('/{roleId}/{moduleId}', [App\Http\Controllers\Superadmin\ModulePermissionController::class, 'update'])->name('update');
+            Route::post('/bulk-update', [App\Http\Controllers\Superadmin\ModulePermissionController::class, 'bulkUpdate'])->name('bulk-update');
+        });
     });
 
     // Modul routes

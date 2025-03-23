@@ -46,6 +46,7 @@
                             <div class="w-full md:w-1/3">
                                 <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                                 <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="">Semua Status</option>
                                     <option value="pending" {{ $selectedStatus == 'pending' ? 'selected' : '' }}>Menunggu</option>
                                     <option value="approved" {{ $selectedStatus == 'approved' ? 'selected' : '' }}>Disetujui</option>
                                     <option value="rejected" {{ $selectedStatus == 'rejected' ? 'selected' : '' }}>Ditolak</option>

@@ -32,6 +32,10 @@
                                 <x-nav-link :href="route('module-activation.index')" :active="request()->routeIs('module-activation.*')">
                                     {{ __('Permintaan Aktivasi') }}
                                 </x-nav-link>
+                                
+                                <x-nav-link :href="route('superadmin.module-permissions.index')" :active="request()->routeIs('superadmin.module-permissions.*')">
+                                    {{ __('Izin Modul') }}
+                                </x-nav-link>
                             @endif
                         @endif
                     @endauth
@@ -142,6 +146,10 @@
                     @if(auth()->user()->hasRole('Superadmin'))
                         <x-responsive-nav-link :href="route('module-activation.index')" :active="request()->routeIs('module-activation.*')">
                             {{ __('Permintaan Aktivasi') }}
+                        </x-responsive-nav-link>
+                        
+                        <x-responsive-nav-link :href="route('superadmin.module-permissions.index')" :active="request()->routeIs('superadmin.module-permissions.*')">
+                            {{ __('Izin Modul') }}
                         </x-responsive-nav-link>
                     @endif
                 @endif

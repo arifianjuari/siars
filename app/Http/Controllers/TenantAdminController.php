@@ -397,31 +397,47 @@ class TenantAdminController extends Controller
         }
 
         // Ambil modul yang aktif untuk rumah sakit
-        $activeModules = $tenant->modules()->wherePivot('is_active', true)->get();
+        $activatedModules = $tenant->modules()->wherePivot('is_active', true)->get();
 
         // Ambil permintaan modul yang sedang pending
         $pendingRequests = $tenant->moduleActivationRequests()->where('status', 'pending')->with('module')->get();
 
+        // Kumpulkan ID dari modul yang sudah aktif atau pending
+        $activatedModuleIds = $activatedModules->pluck('id')->toArray();
+        $pendingModuleIds = $pendingRequests->pluck('module_id')->toArray();
+
+        // Debug info
+        \Log::info('Activated Module IDs: ' . implode(', ', $activatedModuleIds));
+        \Log::info('Pending Module IDs: ' . implode(', ', $pendingModuleIds));
+
         // Ambil semua modul dari database
         $allModules = \App\Models\Module::where('is_active', true)->get();
+        \Log::info('Total modules: ' . $allModules->count());
+
+        foreach ($allModules as $module) {
+            \Log::info("Module ID: {$module->id}, Name: {$module->name}");
+        }
 
         // Filter untuk mendapatkan modul yang tersedia tetapi belum aktif/pending
-        $availableModules = $allModules->filter(function ($module) use ($activeModules, $pendingRequests) {
+        $availableModules = $allModules->filter(function ($module) use ($activatedModuleIds, $pendingModuleIds) {
             // Cek apakah modul sudah aktif
-            $isActive = $activeModules->contains('id', $module->id);
+            $isActive = in_array($module->id, $activatedModuleIds);
 
             // Cek apakah modul sedang pending
-            $isPending = $pendingRequests->contains(function ($request) use ($module) {
-                return $request->module_id == $module->id;
-            });
+            $isPending = in_array($module->id, $pendingModuleIds);
+
+            // Log untuk debugging
+            \Log::info("Module {$module->name} - isActive: " . ($isActive ? 'true' : 'false') . ", isPending: " . ($isPending ? 'true' : 'false'));
 
             // Modul tersedia jika tidak aktif dan tidak pending
             return !$isActive && !$isPending;
         });
 
+        \Log::info('Available modules: ' . $availableModules->count());
+
         return view('tenantadmin.modules', [
             'tenant' => $tenant,
-            'activeModules' => $activeModules,
+            'activatedModules' => $activatedModules,
             'pendingRequests' => $pendingRequests,
             'availableModules' => $availableModules
         ]);

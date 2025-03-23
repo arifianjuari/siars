@@ -95,4 +95,14 @@ class Module extends Model implements Auditable
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Mendapatkan semua role yang memiliki akses ke modul ini
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(\Spatie\Permission\Models\Role::class, 'role_module_permissions')
+            ->withPivot('can_view', 'can_create', 'can_edit', 'can_delete', 'can_approve', 'can_activate')
+            ->withTimestamps();
+    }
 }

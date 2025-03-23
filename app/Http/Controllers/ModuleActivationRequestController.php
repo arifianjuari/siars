@@ -43,7 +43,7 @@ class ModuleActivationRequestController extends Controller
     {
         $user = Auth::user();
         $tenantId = null;
-        $status = $request->input('status', 'pending');
+        $status = $request->input('status', '');
 
         // Jika user adalah admin RS, hanya tampilkan permintaan dari tenant mereka
         if (!$user->isSuperadmin() && $user->tenant_id) {
