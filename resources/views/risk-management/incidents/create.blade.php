@@ -185,8 +185,8 @@
                         <div class="row mb-3">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="dokumen_pendukung">Dokumen Pendukung (PDF/JPG, Maks 5MB)</label>
-                                    <input type="file" name="dokumen_pendukung" id="dokumen_pendukung" class="form-control @error('dokumen_pendukung') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png">
+                                    <label for="dokumen_pendukung">Dokumen Pendukung (PDF/JPG/DOC, Maks 5MB)</label>
+                                    <input type="file" name="dokumen_pendukung" id="dokumen_pendukung" class="form-control @error('dokumen_pendukung') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                     @error('dokumen_pendukung')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -263,6 +263,9 @@
             })
             .then(response => {
                 console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Response not OK: ' + response.status);
+                }
                 return response.json();
             })
             .then(data => {
@@ -273,8 +276,46 @@
                 console.error('Fetch error:', error);
                 resetSubtypes();
                 $('#incident_subtype_id').removeClass('loading-subtypes');
-                alert('Terjadi kesalahan saat memuat data subtipe. Silakan coba lagi.');
+                
+                // Tampilkan pesan error yang lebih detail
+                console.error('Detail error:', error.message);
+                
+                // Coba fallback ke XMLHttpRequest
+                console.log('Mencoba dengan XMLHttpRequest...');
+                fallbackXhrRequest(typeId);
             });
+        }
+        
+        // Fungsi fallback menggunakan XMLHttpRequest jika fetch gagal
+        function fallbackXhrRequest(typeId) {
+            var xhr = new XMLHttpRequest();
+            var url = '{{ route("risk-management.incidents.get-subtypes") }}' + '?incident_type_id=' + typeId;
+            
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            console.log('Data dari XHR:', data);
+                            updateSubtypeDropdown(data);
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e);
+                            alert('Terjadi kesalahan saat memproses data. Silakan coba lagi.');
+                        }
+                    } else {
+                        console.error('XHR error. Status:', xhr.status);
+                        alert('Terjadi kesalahan saat memuat data subtipe. Status: ' + xhr.status);
+                    }
+                    $('#incident_subtype_id').removeClass('loading-subtypes');
+                }
+            };
+            
+            xhr.send();
         }
         
         // Fungsi untuk update dropdown

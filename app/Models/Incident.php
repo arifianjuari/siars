@@ -16,6 +16,7 @@ class Incident extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'case_number',
         'tanggal_waktu_kejadian',
         'location_id',
         'incident_type_id',
@@ -25,13 +26,6 @@ class Incident extends Model
         'kronologis',
         'reporter_id',
         'status',
-        'handling_actions',
-        'handling_date',
-        'handling_result',
-        'follow_up_plan',
-        'handler_id',
-        'completed_at',
-        'handling_document',
         'tanggal_evaluasi',
         'detail_penanganan',
         'hasil_monitoring',
@@ -39,6 +33,19 @@ class Incident extends Model
         'catatan_tambahan',
         'dokumen_pendukung',
         'dokumen_evaluasi',
+        'tindakan_langsung',
+        'handler_id',
+        'handling_date',
+        'handling_actions',
+        'handling_result',
+        'handling_document',
+        'follow_up_plan',
+        'completed_at',
+        'profesi_id',
+        'pernah_terjadi_sebelumnya',
+        'qr_code_path',
+        'qr_code_base64',
+        'nama_pelapor',
     ];
 
     /**

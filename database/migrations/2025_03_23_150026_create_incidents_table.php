@@ -30,6 +30,7 @@ return new class extends Migration
 
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
+            $table->string('case_number')->nullable()->unique(); // Format YYYYMMDD-X
             $table->dateTime('tanggal_waktu_kejadian'); // Tanggal dan waktu insiden terjadi
             $table->foreignId('location_id')->constrained(); // Lokasi kejadian
             $table->foreignId('incident_type_id')->constrained(); // Jenis insiden
@@ -46,6 +47,7 @@ return new class extends Migration
             $table->text('catatan_tambahan')->nullable(); // Catatan tambahan
             $table->string('dokumen_pendukung')->nullable(); // Path ke dokumen pendukung
             $table->string('dokumen_evaluasi')->nullable(); // Path ke dokumen evaluasi
+            $table->string('qr_code_path')->nullable(); // Path ke QR code yang dihasilkan
             $table->timestamps();
             $table->softDeletes(); // Soft delete
         });

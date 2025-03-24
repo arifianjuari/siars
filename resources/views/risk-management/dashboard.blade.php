@@ -151,36 +151,13 @@
                                     </td>
                                     <td>
                                         <a href="{{ route('risk-management.monitoring.edit', $incident->id) }}" class="btn btn-sm btn-danger">Tangani</a>
-                                        <button type="button" class="btn btn-sm btn-danger" title="Hapus" data-bs-toggle="modal" data-bs-target="#deleteModalHigh{{ $incident->id }}">
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn" title="Hapus" 
+                                            data-id="{{ $incident->id }}" 
+                                            data-tanggal="{{ $incident->tanggal_waktu_kejadian->format('d/m/Y H:i') }}" 
+                                            data-lokasi="{{ $incident->location->name }}" 
+                                            data-rm="{{ $incident->no_rm }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
-                                        
-                                        <!-- Modal Konfirmasi Hapus -->
-                                        <div class="modal fade" id="deleteModalHigh{{ $incident->id }}" tabindex="-1" aria-labelledby="deleteModalHighLabel{{ $incident->id }}" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header bg-danger text-white">
-                                                        <h5 class="modal-title" id="deleteModalHighLabel{{ $incident->id }}">Konfirmasi Hapus Insiden</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>Apakah Anda yakin ingin menghapus insiden berisiko tinggi ini?</p>
-                                                        <p><strong>Tanggal:</strong> {{ $incident->tanggal_waktu_kejadian->format('d/m/Y H:i') }}</p>
-                                                        <p><strong>Lokasi:</strong> {{ $incident->location->name }}</p>
-                                                        <p><strong>No. RM:</strong> {{ $incident->no_rm }}</p>
-                                                        <p class="text-danger">Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait (klasifikasi, analisis, dan penanganan).</p>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                        <form action="{{ route('risk-management.incidents.destroy', $incident->id) }}" method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger">Hapus Insiden</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -268,39 +245,16 @@
                                             <a href="{{ route('risk-management.monitoring.edit', $incident->id) }}" class="btn btn-sm btn-secondary" title="Monitoring">
                                                 <i class="fas fa-tasks"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-danger" title="Hapus" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $incident->id }}">
+                                            <button type="button" class="btn btn-sm btn-danger delete-btn" title="Hapus" 
+                                                data-id="{{ $incident->id }}" 
+                                                data-tanggal="{{ $incident->tanggal_waktu_kejadian->format('d/m/Y H:i') }}" 
+                                                data-lokasi="{{ $incident->location->name }}" 
+                                                data-rm="{{ $incident->no_rm }}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                
-                                <!-- Modal Konfirmasi Hapus -->
-                                <div class="modal fade" id="deleteModal{{ $incident->id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ $incident->id }}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title" id="deleteModalLabel{{ $incident->id }}">Konfirmasi Hapus Insiden</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <p>Apakah Anda yakin ingin menghapus insiden ini?</p>
-                                                <p><strong>Tanggal:</strong> {{ $incident->tanggal_waktu_kejadian->format('d/m/Y H:i') }}</p>
-                                                <p><strong>Lokasi:</strong> {{ $incident->location->name }}</p>
-                                                <p><strong>No. RM:</strong> {{ $incident->no_rm }}</p>
-                                                <p class="text-danger">Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait (klasifikasi, analisis, dan penanganan).</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                <form action="{{ route('risk-management.incidents.destroy', $incident->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">Hapus Insiden</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 @empty
                                 <tr>
                                     <td colspan="7" class="text-center py-4">
@@ -596,6 +550,60 @@
                 }
             }
         }
+    });
+</script>
+@endpush
+
+<!-- Modal Konfirmasi Hapus Generik -->
+<div class="modal fade" id="deleteIncidentModal" tabindex="-1" aria-labelledby="deleteIncidentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteIncidentModalLabel">Konfirmasi Hapus Insiden</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus insiden ini?</p>
+                <p><strong>Tanggal:</strong> <span id="modal-tanggal"></span></p>
+                <p><strong>Lokasi:</strong> <span id="modal-lokasi"></span></p>
+                <p><strong>No. RM:</strong> <span id="modal-rm"></span></p>
+                <p class="text-danger">Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait (klasifikasi, analisis, dan penanganan).</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form id="deleteIncidentForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Hapus Insiden</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    // Menangani tombol hapus untuk membuka modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteIncidentModal'));
+        
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const tanggal = this.getAttribute('data-tanggal');
+                const lokasi = this.getAttribute('data-lokasi');
+                const rm = this.getAttribute('data-rm');
+                
+                document.getElementById('modal-tanggal').textContent = tanggal;
+                document.getElementById('modal-lokasi').textContent = lokasi;
+                document.getElementById('modal-rm').textContent = rm;
+                
+                document.getElementById('deleteIncidentForm').action = 
+                    "{{ route('risk-management.incidents.destroy', '') }}/" + id;
+                
+                deleteModal.show();
+            });
+        });
     });
 </script>
 @endpush

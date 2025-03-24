@@ -180,6 +180,9 @@
                                                     <a href="{{ route('risk-management.reports.show', $incident->id) }}" class="btn btn-sm btn-success" title="Laporan">
                                                         <i class="fas fa-file-alt"></i>
                                                     </a>
+                                                    <a href="{{ route('risk-management.incidents.export-pdf', $incident->id) }}" class="btn btn-sm btn-success" title="Unduh PDF">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
                                                 @endif
                                                 <button type="button" class="btn btn-sm btn-danger" title="Hapus" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $incident->id }}">
                                                     <i class="fas fa-trash"></i>

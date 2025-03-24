@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'checkrole' => \App\Http\Middleware\CheckRole::class,
         'tenant.check' => \App\Http\Middleware\CheckTenantOwnership::class,
         'check.module.activation' => \App\Http\Middleware\CheckModuleActiveMiddleware::class,
+        'debug.ajax' => \App\Http\Middleware\DebugAjaxRequests::class,
     ];
 }

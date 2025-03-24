@@ -136,8 +136,8 @@
                         <div class="row mb-3">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label for="dokumen_pendukung">Dokumen Pendukung (PDF/JPG, Maks 5MB)</label>
-                                    <input type="file" name="dokumen_pendukung" id="dokumen_pendukung" class="form-control @error('dokumen_pendukung') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png">
+                                    <label for="dokumen_pendukung">Dokumen Pendukung (PDF/JPG/DOC, Maks 5MB)</label>
+                                    <input type="file" name="dokumen_pendukung" id="dokumen_pendukung" class="form-control @error('dokumen_pendukung') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                                     @error('dokumen_pendukung')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -145,9 +145,15 @@
                                     @if($incident->dokumen_pendukung)
                                         <div class="mt-2">
                                             <span class="text-muted">Dokumen saat ini:</span>
-                                            <a href="{{ Storage::url($incident->dokumen_pendukung) }}" target="_blank" class="btn btn-sm btn-info ms-2">
-                                                <i class="fas fa-file-download"></i> Lihat Dokumen
+                                            <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#previewDocumentModal">
+                                                <i class="fas fa-eye"></i> Lihat Dokumen
+                                            </button>
+                                            <a href="{{ asset('storage/' . $incident->dokumen_pendukung) }}" target="_blank" class="btn btn-sm btn-secondary ms-2">
+                                                <i class="fas fa-file-download"></i> Unduh
                                             </a>
+                                            <button type="button" class="btn btn-sm btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteDocumentModal">
+                                                <i class="fas fa-trash"></i> Hapus Dokumen
+                                            </button>
                                         </div>
                                     @endif
                                 </div>
@@ -223,6 +229,9 @@
             })
             .then(response => {
                 console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Response not OK: ' + response.status);
+                }
                 return response.json();
             })
             .then(data => {
@@ -233,8 +242,46 @@
                 console.error('Fetch error:', error);
                 resetSubtypes();
                 $('#incident_subtype_id').removeClass('loading-subtypes');
-                alert('Terjadi kesalahan saat memuat data subtipe. Silakan coba lagi.');
+                
+                // Tampilkan pesan error yang lebih detail
+                console.error('Detail error:', error.message);
+                
+                // Coba fallback ke XMLHttpRequest
+                console.log('Mencoba dengan XMLHttpRequest...');
+                fallbackXhrRequest(typeId);
             });
+        }
+        
+        // Fungsi fallback menggunakan XMLHttpRequest jika fetch gagal
+        function fallbackXhrRequest(typeId) {
+            var xhr = new XMLHttpRequest();
+            var url = '{{ route("risk-management.incidents.get-subtypes") }}' + '?incident_type_id=' + typeId;
+            
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            console.log('Data dari XHR:', data);
+                            updateSubtypeDropdown(data);
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e);
+                            alert('Terjadi kesalahan saat memproses data. Silakan coba lagi.');
+                        }
+                    } else {
+                        console.error('XHR error. Status:', xhr.status);
+                        alert('Terjadi kesalahan saat memuat data subtipe. Status: ' + xhr.status);
+                    }
+                    $('#incident_subtype_id').removeClass('loading-subtypes');
+                }
+            };
+            
+            xhr.send();
         }
         
         // Fungsi untuk update dropdown
@@ -277,4 +324,80 @@
     });
 </script>
 @endpush
+
+<!-- Modal Konfirmasi Hapus Dokumen -->
+<div class="modal fade" id="deleteDocumentModal" tabindex="-1" aria-labelledby="deleteDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteDocumentModalLabel">Konfirmasi Hapus Dokumen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus dokumen pendukung ini? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form action="{{ route('risk-management.incidents.delete-document', $incident->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Hapus Dokumen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Preview Dokumen -->
+<div class="modal fade" id="previewDocumentModal" tabindex="-1" aria-labelledby="previewDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="previewDocumentModalLabel">Preview Dokumen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                @if($incident->dokumen_pendukung)
+                    @php
+                        $file_extension = pathinfo($incident->dokumen_pendukung, PATHINFO_EXTENSION);
+                        $is_image = in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif']);
+                        $is_pdf = strtolower($file_extension) === 'pdf';
+                        $file_url = asset('storage/' . $incident->dokumen_pendukung);
+                    @endphp
+
+                    @if($is_image)
+                        <div class="text-center p-3">
+                            <img src="{{ $file_url }}" class="img-fluid" alt="Dokumen Pendukung">
+                        </div>
+                    @elseif($is_pdf)
+                        <div class="ratio ratio-16x9" style="min-height: 500px;">
+                            <iframe src="{{ $file_url }}" allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="p-5 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-file-alt fa-5x text-primary"></i>
+                            </div>
+                            <h5>Dokumen tidak dapat ditampilkan langsung</h5>
+                            <p class="text-muted mb-4">Format file {{ strtoupper($file_extension) }} tidak dapat ditampilkan sebagai preview. Silakan unduh dokumen untuk melihatnya.</p>
+                            <a href="{{ $file_url }}" class="btn btn-primary" download>
+                                <i class="fas fa-download me-2"></i> Unduh Dokumen
+                            </a>
+                        </div>
+                    @endif
+                @else
+                    <div class="p-5 text-center">
+                        <h5>Tidak ada dokumen</h5>
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="{{ asset('storage/' . $incident->dokumen_pendukung) }}" class="btn btn-primary" download>
+                    <i class="fas fa-download me-1"></i> Unduh
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection 

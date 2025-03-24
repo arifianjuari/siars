@@ -148,43 +148,46 @@
                                             <table class="table table-bordered">
                                                 <tr>
                                                     <th style="width: 200px">Tingkat Keparahan</th>
-                                                    <td>{{ $incident->classification->severity ?? '-' }}</td>
+                                                    <td>{{ $incident->classification->dampak ?? '-' }} - {{ $incident->classification->dampak_detail ?? '-' }}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Probabilitas</th>
-                                                    <td>{{ $incident->classification->probability ?? '-' }}</td>
+                                                    <td>{{ $incident->classification->probabilitas ?? '-' }} - {{ $incident->classification->probabilitas_detail ?? '-' }}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Tingkat Risiko</th>
                                                     <td>
                                                         @php
-                                                            $riskLevel = $incident->classification->risk_level;
+                                                            $riskLevel = $incident->classification->level_risiko ?? '-';
                                                             $badgeClass = '';
-                                                            switch($riskLevel) {
-                                                                case 'Rendah':
-                                                                    $badgeClass = 'bg-success';
-                                                                    break;
-                                                                case 'Sedang':
-                                                                    $badgeClass = 'bg-warning';
-                                                                    break;
-                                                                case 'Tinggi':
-                                                                    $badgeClass = 'bg-danger';
-                                                                    break;
-                                                                case 'Ekstrem':
-                                                                    $badgeClass = 'bg-dark';
-                                                                    break;
-                                                                default:
-                                                                    $badgeClass = 'bg-info';
+                                                            if ($incident->classification) {
+                                                                switch($incident->classification->zona_risiko) {
+                                                                    case 'Merah':
+                                                                        $badgeClass = 'bg-danger';
+                                                                        break;
+                                                                    case 'Kuning':
+                                                                        $badgeClass = 'bg-warning';
+                                                                        break;
+                                                                    case 'Hijau':
+                                                                        $badgeClass = 'bg-success';
+                                                                        break;
+                                                                    default:
+                                                                        $badgeClass = 'bg-info';
+                                                                }
                                                             }
                                                         @endphp
+                                                        @if($incident->classification)
                                                         <span class="badge {{ $badgeClass }}">
-                                                            {{ $riskLevel }}
+                                                            {{ $riskLevel }} ({{ $incident->classification->zona_risiko ?? '-' }})
                                                         </span>
+                                                        @else
+                                                        -
+                                                        @endif
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <th>Skor Risiko</th>
-                                                    <td>{{ $incident->classification->risk_score ?? '-' }}</td>
+                                                    <td>{{ $incident->classification->skor_risiko ?? '-' }}</td>
                                                 </tr>
                                             </table>
                                         @else

@@ -56,7 +56,7 @@
                                                     <th rowspan="5" class="align-middle text-center" style="writing-mode: vertical-rl; transform: rotate(180deg);">Probabilitas</th>
                                                     <th class="text-center">5<br>Sangat Sering</th>
                                                     <td class="bg-warning text-center">5</td>
-                                                    <td class="bg-warning text-center">10</td>
+                                                    <td class="bg-danger text-center">10</td>
                                                     <td class="bg-danger text-center">15</td>
                                                     <td class="bg-danger text-center">20</td>
                                                     <td class="bg-danger text-center">25</td>
@@ -100,8 +100,8 @@
                                         <div class="d-flex justify-content-between">
                                             <span class="badge bg-info p-2">Risiko Rendah (1)</span>
                                             <span class="badge bg-success p-2">Risiko Rendah (2-3)</span>
-                                            <span class="badge bg-warning p-2">Risiko Sedang (4-10)</span>
-                                            <span class="badge bg-danger p-2">Risiko Tinggi (>10)</span>
+                                            <span class="badge bg-warning p-2">Risiko Sedang (4-9)</span>
+                                            <span class="badge bg-danger p-2">Risiko Tinggi (≥10)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -231,7 +231,7 @@
                     level = 'Risiko Rendah';
                     zona = 'Hijau';
                     warna = 'success';
-                } else if (skor >= 4 && skor <= 10) {
+                } else if (skor >= 4 && skor < 10) {
                     level = 'Risiko Sedang';
                     zona = 'Kuning';
                     warna = 'warning';

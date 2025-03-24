@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -39,6 +44,9 @@
                         <button type="button" class="btn btn-sm btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteIncidentModal">
                             <i class="fas fa-trash"></i> Hapus
                         </button>
+                        <a href="{{ route('risk-management.incidents.export-pdf', $incident->id) }}" class="btn btn-sm btn-success me-2" title="Unduh PDF">
+                            <i class="fas fa-file-pdf"></i> Unduh Laporan
+                        </a>
                         <a href="{{ route('risk-management.incidents.index') }}" class="btn btn-sm btn-light">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
@@ -60,6 +68,10 @@
                                     <span class="badge bg-success">Selesai</span>
                                 @endif
                             </td>
+                        </tr>
+                        <tr>
+                            <th>Nomor Kasus</th>
+                            <td>{{ $incident->case_number ?? 'Belum ditetapkan' }}</td>
                         </tr>
                         <tr>
                             <th>Tanggal & Waktu Kejadian</th>
@@ -105,9 +117,15 @@
                             <th>Dokumen Pendukung</th>
                             <td>
                                 @if($incident->dokumen_pendukung)
-                                    <a href="{{ Storage::url($incident->dokumen_pendukung) }}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-file-download"></i> Lihat Dokumen
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#previewDocumentModal">
+                                        <i class="fas fa-eye me-1"></i> Lihat Dokumen
+                                    </button>
+                                    <a href="{{ asset('storage/' . $incident->dokumen_pendukung) }}" target="_blank" class="btn btn-sm btn-secondary ms-1">
+                                        <i class="fas fa-file-download me-1"></i> Unduh
                                     </a>
+                                    <button type="button" class="btn btn-sm btn-danger ms-1" data-bs-toggle="modal" data-bs-target="#deleteDocumentModal">
+                                        <i class="fas fa-trash me-1"></i> Hapus
+                                    </button>
                                 @else
                                     <span class="text-muted">Tidak ada dokumen</span>
                                 @endif
@@ -162,6 +180,45 @@
                             @endif
                         </li>
                     </ul>
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">QR Code Verifikasi</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if($incident->qr_code_path || $incident->qr_code_base64)
+                        <div class="mb-3 d-flex justify-content-center">
+                            @if($incident->qr_code_path && Str::endsWith($incident->qr_code_path, '.svg'))
+                                <!-- Tampilkan SVG secara langsung -->
+                                <div class="d-inline-block" style="width: 200px; height: 200px;">
+                                    {!! Storage::disk('public')->exists($incident->qr_code_path) ? Storage::disk('public')->get($incident->qr_code_path) : '' !!}
+                                </div>
+                            @elseif($incident->qr_code_base64)
+                                <!-- Tampilkan QR code dari base64 jika tersedia -->
+                                <img src="data:image/svg+xml;base64,{{ $incident->qr_code_base64 }}" alt="QR Code Verifikasi" style="width: 200px; height: 200px;">
+                            @else
+                                <!-- Fallback ke gambar normal -->
+                                <img src="{{ asset('storage/' . $incident->qr_code_path) }}" alt="QR Code Verifikasi" style="width: 200px; height: 200px;">
+                            @endif
+                        </div>
+                        <p class="mb-1">Nomor Kasus: <strong>{{ $incident->case_number }}</strong></p>
+                        @if($incident->completed_at)
+                            <p>Tanggal Penyelesaian: <strong>{{ $incident->completed_at->format('d/m/Y') }}</strong></p>
+                        @else
+                            <p class="text-muted">Insiden belum diselesaikan</p>
+                        @endif
+                    @else
+                        <p class="mb-3">QR Code belum dibuat</p>
+                        <form action="{{ route('risk-management.incidents.generate-qr', $incident->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-qrcode me-2"></i> Generate QR Code
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
 
@@ -435,6 +492,82 @@
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Hapus Insiden</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Dokumen -->
+<div class="modal fade" id="deleteDocumentModal" tabindex="-1" aria-labelledby="deleteDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteDocumentModalLabel">Konfirmasi Hapus Dokumen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus dokumen pendukung ini? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form action="{{ route('risk-management.incidents.delete-document', $incident->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Hapus Dokumen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Preview Dokumen -->
+<div class="modal fade" id="previewDocumentModal" tabindex="-1" aria-labelledby="previewDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="previewDocumentModalLabel">Preview Dokumen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                @if($incident->dokumen_pendukung)
+                    @php
+                        $file_extension = pathinfo($incident->dokumen_pendukung, PATHINFO_EXTENSION);
+                        $is_image = in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif']);
+                        $is_pdf = strtolower($file_extension) === 'pdf';
+                        $file_url = asset('storage/' . $incident->dokumen_pendukung);
+                    @endphp
+
+                    @if($is_image)
+                        <div class="text-center p-3">
+                            <img src="{{ $file_url }}" class="img-fluid" alt="Dokumen Pendukung">
+                        </div>
+                    @elseif($is_pdf)
+                        <div class="ratio ratio-16x9" style="min-height: 500px;">
+                            <iframe src="{{ $file_url }}" allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="p-5 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-file-alt fa-5x text-primary"></i>
+                            </div>
+                            <h5>Dokumen tidak dapat ditampilkan langsung</h5>
+                            <p class="text-muted mb-4">Format file {{ strtoupper($file_extension) }} tidak dapat ditampilkan sebagai preview. Silakan unduh dokumen untuk melihatnya.</p>
+                            <a href="{{ $file_url }}" class="btn btn-primary" download>
+                                <i class="fas fa-download me-2"></i> Unduh Dokumen
+                            </a>
+                        </div>
+                    @endif
+                @else
+                    <div class="p-5 text-center">
+                        <h5>Tidak ada dokumen</h5>
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="{{ asset('storage/' . $incident->dokumen_pendukung) }}" class="btn btn-primary" download>
+                    <i class="fas fa-download me-1"></i> Unduh
+                </a>
             </div>
         </div>
     </div>

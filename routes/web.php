@@ -32,6 +32,8 @@ use App\Http\Controllers\TenantModuleController;
 use App\Http\Controllers\ModuleActivationRequestController;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\RiskManagementController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -403,64 +405,78 @@ Route::prefix('snars')->middleware(['auth', 'verified', 'check.module.activation
 });
 
 // Modul Manajemen Risiko
-Route::prefix('risk-management')->middleware(['auth', 'verified', \App\Http\Middleware\CheckModuleActiveMiddleware::class . ':RISK'])->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\RiskManagementController::class, 'dashboard'])->name('risk-management.dashboard');
+Route::middleware(['auth'])->group(function () {
+    // Route prefix risk-management
+    Route::prefix('risk-management')->name('risk-management.')->middleware(['auth', 'web'])->group(function () {
+        // Get subtypes (endpoint API) - ditempatkan di atas rute lain agar tidak konflik
+        Route::get('/incidents/get-subtypes', [IncidentController::class, 'getSubtypes'])
+            ->name('incidents.get-subtypes')
+            ->withoutMiddleware(['auth']);
 
-    // Route untuk mendapatkan subtipe berdasarkan jenis insiden untuk dropdown
-    Route::get('incidents/get-subtypes', [App\Http\Controllers\IncidentController::class, 'getSubtypes'])->name('risk-management.incidents.get-subtypes');
+        // Insiden
+        Route::resource('incidents', IncidentController::class);
 
-    // Insiden
-    Route::resource('incidents', App\Http\Controllers\IncidentController::class, ['as' => 'risk-management']);
+        // Dashboard Manajemen Risiko
+        Route::get('/dashboard', [RiskManagementController::class, 'dashboard'])->name('dashboard');
 
-    // Klasifikasi Risiko
-    Route::resource('classifications', App\Http\Controllers\ClassificationController::class, ['as' => 'risk-management']);
+        // Rute Insiden
+        Route::resource('incidents', IncidentController::class);
+        Route::get('incidents/{incident}/export-pdf', [IncidentController::class, 'exportPdf'])->name('incidents.export-pdf');
+        Route::post('incidents/{incident}/generate-qr', [IncidentController::class, 'generateQrCode'])->name('incidents.generate-qr');
+        Route::get('verify-incident/{caseNumber}', [IncidentController::class, 'verify'])->name('incidents.verify');
+        Route::delete('incidents/{incident}/delete-document', [IncidentController::class, 'deleteDocument'])->name('incidents.delete-document');
+        Route::delete('incidents/{incident}/delete-evaluation-document', [IncidentController::class, 'deleteEvaluationDocument'])->name('incidents.delete-evaluation-document');
 
-    // Analisis Akar Masalah
-    Route::resource('analysis', App\Http\Controllers\RootCauseAnalysisController::class, [
-        'as' => 'risk-management',
-        'parameters' => ['analysis' => 'analysis']
-    ]);
+        // Klasifikasi Risiko
+        Route::resource('classifications', App\Http\Controllers\ClassificationController::class);
 
-    // Monitoring dan Penanganan
-    Route::resource('monitoring', App\Http\Controllers\MonitoringController::class, ['as' => 'risk-management']);
+        // Analisis Akar Masalah
+        Route::resource('analysis', App\Http\Controllers\RootCauseAnalysisController::class, [
+            'parameters' => ['analysis' => 'analysis']
+        ]);
 
-    // Kategori Risiko
-    Route::resource('categories', App\Http\Controllers\RiskCategoryController::class, ['as' => 'risk-management']);
+        // Monitoring dan Penanganan
+        Route::resource('monitoring', App\Http\Controllers\MonitoringController::class);
 
-    // Penilaian Risiko
-    Route::resource('reviews', App\Http\Controllers\RiskReviewController::class, ['as' => 'risk-management']);
+        // Kategori Risiko
+        Route::resource('categories', App\Http\Controllers\RiskCategoryController::class);
 
-    // Laporan Risiko
-    Route::get('/reports', [App\Http\Controllers\RiskReportController::class, 'index'])->name('risk-management.reports.index');
-    Route::get('/reports/{type}', [App\Http\Controllers\RiskReportController::class, 'show'])->name('risk-management.reports.show');
-    Route::post('/reports/{type}/pdf', [App\Http\Controllers\RiskReportController::class, 'generatePdf'])->name('risk-management.reports.pdf');
-    Route::post('/reports/{type}/excel', [App\Http\Controllers\RiskReportController::class, 'generateExcel'])->name('risk-management.reports.excel');
+        // Penilaian Risiko
+        Route::resource('reviews', App\Http\Controllers\RiskReviewController::class);
 
-    // Faktor Penyebab Risiko
-    Route::resource('factors', App\Http\Controllers\RiskFactorController::class, ['as' => 'risk-management']);
+        // Laporan Risiko
+        Route::get('/reports', [App\Http\Controllers\RiskReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/{type}', [App\Http\Controllers\RiskReportController::class, 'show'])->name('reports.show');
+        Route::post('/reports/{type}/pdf', [App\Http\Controllers\RiskReportController::class, 'generatePdf'])->name('reports.pdf');
+        Route::post('/reports/{type}/excel', [App\Http\Controllers\RiskReportController::class, 'generateExcel'])->name('reports.excel');
+        Route::post('/reports/export', [App\Http\Controllers\RiskReportController::class, 'export'])->name('reports.export');
 
-    // Mitigasi Risiko
-    Route::resource('mitigations', App\Http\Controllers\RiskMitigationController::class, ['as' => 'risk-management']);
+        // Faktor Penyebab Risiko
+        Route::resource('factors', App\Http\Controllers\RiskFactorController::class);
 
-    // Pengaturan
-    Route::get('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'incidentTypes'])->name('risk-management.settings.incident-types');
-    Route::post('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'storeIncidentType'])->name('risk-management.settings.incident-types.store');
-    Route::put('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentType'])->name('risk-management.settings.incident-types.update');
-    Route::delete('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentType'])->name('risk-management.settings.incident-types.delete');
+        // Mitigasi Risiko
+        Route::resource('mitigations', App\Http\Controllers\RiskMitigationController::class);
 
-    Route::post('/settings/incident-subtypes', [App\Http\Controllers\SettingsController::class, 'storeIncidentSubtype'])->name('risk-management.settings.incident-subtypes.store');
-    Route::put('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentSubtype'])->name('risk-management.settings.incident-subtypes.update');
-    Route::delete('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentSubtype'])->name('risk-management.settings.incident-subtypes.delete');
+        // Pengaturan
+        Route::get('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'incidentTypes'])->name('settings.incident-types');
+        Route::post('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'storeIncidentType'])->name('settings.incident-types.store');
+        Route::put('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentType'])->name('settings.incident-types.update');
+        Route::delete('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentType'])->name('settings.incident-types.delete');
 
-    Route::get('/settings/locations', [App\Http\Controllers\SettingsController::class, 'locations'])->name('risk-management.settings.locations');
-    Route::post('/settings/locations', [App\Http\Controllers\SettingsController::class, 'storeLocation'])->name('risk-management.settings.locations.store');
-    Route::put('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'updateLocation'])->name('risk-management.settings.locations.update');
-    Route::delete('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'deleteLocation'])->name('risk-management.settings.locations.delete');
+        Route::post('/settings/incident-subtypes', [App\Http\Controllers\SettingsController::class, 'storeIncidentSubtype'])->name('settings.incident-subtypes.store');
+        Route::put('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentSubtype'])->name('settings.incident-subtypes.update');
+        Route::delete('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentSubtype'])->name('settings.incident-subtypes.delete');
 
-    Route::get('/settings/risk-levels', [App\Http\Controllers\SettingsController::class, 'riskLevels'])->name('risk-management.settings.risk-levels');
+        Route::get('/settings/locations', [App\Http\Controllers\SettingsController::class, 'locations'])->name('settings.locations');
+        Route::post('/settings/locations', [App\Http\Controllers\SettingsController::class, 'storeLocation'])->name('settings.locations.store');
+        Route::put('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'updateLocation'])->name('settings.locations.update');
+        Route::delete('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'deleteLocation'])->name('settings.locations.delete');
 
-    // Tambah route untuk matriks risiko
-    Route::get('/settings/risk-matrix', [App\Http\Controllers\SettingsController::class, 'riskMatrix'])->name('risk-management.settings.risk-matrix');
+        Route::get('/settings/risk-levels', [App\Http\Controllers\SettingsController::class, 'riskLevels'])->name('settings.risk-levels');
+
+        // Tambah route untuk matriks risiko
+        Route::get('/settings/risk-matrix', [App\Http\Controllers\SettingsController::class, 'riskMatrix'])->name('settings.risk-matrix');
+    });
 });
 
 require __DIR__ . '/auth.php';
