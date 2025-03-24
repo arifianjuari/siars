@@ -33,16 +33,16 @@
                             
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="lokasi_id">Lokasi Kejadian <span class="text-danger">*</span></label>
-                                    <select name="lokasi_id" id="lokasi_id" class="form-control @error('lokasi_id') is-invalid @enderror" required>
+                                    <label for="location_id">Lokasi Kejadian <span class="text-danger">*</span></label>
+                                    <select name="location_id" id="location_id" class="form-control @error('location_id') is-invalid @enderror" required>
                                         <option value="">-- Pilih Lokasi --</option>
                                         @foreach($locations as $location)
-                                            <option value="{{ $location->id }}" {{ old('lokasi_id') == $location->id ? 'selected' : '' }}>
+                                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
                                                 {{ $location->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('lokasi_id')
+                                    @error('location_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -62,9 +62,9 @@
                             
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="no_rekam_medis">Nomor Rekam Medis <span class="text-danger">*</span></label>
-                                    <input type="text" name="no_rekam_medis" id="no_rekam_medis" class="form-control @error('no_rekam_medis') is-invalid @enderror" required value="{{ old('no_rekam_medis') }}">
-                                    @error('no_rekam_medis')
+                                    <label for="no_rm">Nomor Rekam Medis <span class="text-danger">*</span></label>
+                                    <input type="text" name="no_rm" id="no_rm" class="form-control @error('no_rm') is-invalid @enderror" required value="{{ old('no_rm') }}">
+                                    @error('no_rm')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -74,16 +74,16 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="jenis_insiden_id">Jenis Insiden <span class="text-danger">*</span></label>
-                                    <select name="jenis_insiden_id" id="jenis_insiden_id" class="form-control @error('jenis_insiden_id') is-invalid @enderror" required>
+                                    <label for="incident_type_id">Jenis Insiden <span class="text-danger">*</span></label>
+                                    <select name="incident_type_id" id="incident_type_id" class="form-control @error('incident_type_id') is-invalid @enderror" required>
                                         <option value="">-- Pilih Jenis Insiden --</option>
                                         @foreach($incidentTypes as $type)
-                                            <option value="{{ $type->id }}" {{ old('jenis_insiden_id') == $type->id ? 'selected' : '' }}>
+                                            <option value="{{ $type->id }}" {{ old('incident_type_id') == $type->id ? 'selected' : '' }}>
                                                 {{ $type->name }} {{ $type->code ? '('.$type->code.')' : '' }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('jenis_insiden_id')
+                                    @error('incident_type_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -94,18 +94,13 @@
                                     <label for="incident_subtype_id">Subtipe Insiden <span class="text-danger">*</span></label>
                                     <select name="incident_subtype_id" id="incident_subtype_id" class="form-control @error('incident_subtype_id') is-invalid @enderror" required>
                                         <option value="">-- Pilih Subtipe Insiden --</option>
-                                        @if(old('incident_subtype_id') && old('jenis_insiden_id'))
+                                        @if(old('incident_subtype_id') && old('incident_type_id'))
                                             <option value="{{ old('incident_subtype_id') }}" selected>Memuat...</option>
                                         @endif
                                     </select>
                                     @error('incident_subtype_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="mt-2">
-                                        <small class="text-muted">
-                                            Jika dropdown tidak muncul, silakan <a href="{{ route('risk-management.incidents.get-subtypes') }}?incident_type_id=7" target="_blank">klik di sini untuk menguji endpoint</a>.
-                                        </small>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -217,8 +212,32 @@
             cache: false
         });
         
+        // Tambahkan listener untuk form submit
+        $('form').on('submit', function(e) {
+            console.log('Form submit event triggered');
+            
+            // Log semua nilai form
+            var formData = {};
+            $(this).serializeArray().forEach(function(item) {
+                formData[item.name] = item.value;
+            });
+            console.log('Form data:', formData);
+            
+            // Periksa nilai subtipe insiden
+            var subtypeId = $('#incident_subtype_id').val();
+            console.log('Selected incident_subtype_id:', subtypeId);
+            
+            if (!subtypeId && $('#incident_subtype_id').prop('required')) {
+                e.preventDefault();
+                console.error('Subtipe insiden diperlukan tetapi tidak dipilih');
+                alert('Harap pilih subtipe insiden terlebih dahulu');
+                $('#incident_subtype_id').focus();
+                return false;
+            }
+        });
+        
         // Periksa jika ada nilai jenis insiden yang dipilih saat load halaman (misalnya dari old input)
-        var initialTypeId = $('#jenis_insiden_id').val();
+        var initialTypeId = $('#incident_type_id').val();
         console.log('Initial type ID:', initialTypeId);
         
         if (initialTypeId) {
@@ -226,7 +245,7 @@
         }
         
         // Event listener untuk perubahan dropdown jenis insiden
-        $('#jenis_insiden_id').on('change', function() {
+        $('#incident_type_id').on('change', function() {
             var incidentTypeId = $(this).val();
             console.log('Jenis insiden berubah:', incidentTypeId);
             
@@ -252,16 +271,21 @@
             var fullUrl = url + '?incident_type_id=' + typeId;
             console.log('Full URL constructed:', fullUrl);
             
-            // Menggunakan fetch API sebagai alternatif
+            // Menggunakan fetch API dengan timeout
+            var controller = new AbortController();
+            var timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout 5 detik
+            
             fetch(fullUrl, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
+                signal: controller.signal,
                 cache: 'no-store'
             })
             .then(response => {
+                clearTimeout(timeoutId);
                 console.log('Response status:', response.status);
                 if (!response.ok) {
                     throw new Error('Response not OK: ' + response.status);
@@ -270,9 +294,18 @@
             })
             .then(data => {
                 console.log('Data dari fetch API:', data);
-                updateSubtypeDropdown(data);
+                if (Array.isArray(data)) {
+                    updateSubtypeDropdown(data);
+                } else {
+                    console.error('Data yang diterima bukan array:', data);
+                    if (data && data.error) {
+                        console.error('Error dari server:', data.error);
+                    }
+                    resetSubtypes();
+                }
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.error('Fetch error:', error);
                 resetSubtypes();
                 $('#incident_subtype_id').removeClass('loading-subtypes');
@@ -291,28 +324,58 @@
             var xhr = new XMLHttpRequest();
             var url = '{{ route("risk-management.incidents.get-subtypes") }}' + '?incident_type_id=' + typeId;
             
+            console.log('XMLHttpRequest URL:', url);
+            
             xhr.open('GET', url, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.setRequestHeader('Accept', 'application/json');
             xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
             
+            // Set timeout
+            xhr.timeout = 5000; // 5 detik
+            
             xhr.onreadystatechange = function() {
+                console.log('XHR readyState:', xhr.readyState, 'status:', xhr.status);
+                
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         try {
                             var data = JSON.parse(xhr.responseText);
                             console.log('Data dari XHR:', data);
-                            updateSubtypeDropdown(data);
+                            if (Array.isArray(data)) {
+                                updateSubtypeDropdown(data);
+                            } else {
+                                console.error('Data yang diterima bukan array:', data);
+                                resetSubtypes();
+                            }
                         } catch (e) {
                             console.error('Error parsing JSON:', e);
+                            console.error('Raw response:', xhr.responseText);
                             alert('Terjadi kesalahan saat memproses data. Silakan coba lagi.');
+                            resetSubtypes();
                         }
                     } else {
                         console.error('XHR error. Status:', xhr.status);
+                        console.error('Response text:', xhr.responseText);
                         alert('Terjadi kesalahan saat memuat data subtipe. Status: ' + xhr.status);
+                        resetSubtypes();
                     }
                     $('#incident_subtype_id').removeClass('loading-subtypes');
                 }
+            };
+            
+            xhr.ontimeout = function() {
+                console.error('XHR timeout');
+                alert('Waktu permintaan habis. Silakan coba lagi.');
+                $('#incident_subtype_id').removeClass('loading-subtypes');
+                resetSubtypes();
+            };
+            
+            xhr.onerror = function() {
+                console.error('XHR error event triggered');
+                alert('Terjadi kesalahan jaringan. Silakan coba lagi.');
+                $('#incident_subtype_id').removeClass('loading-subtypes');
+                resetSubtypes();
             };
             
             xhr.send();
@@ -323,21 +386,28 @@
             $('#incident_subtype_id').empty();
             $('#incident_subtype_id').append('<option value="">-- Pilih Subtipe Insiden --</option>');
             
+            var oldSubtypeId = "{{ old('incident_subtype_id') }}";
+            console.log('Old subtype ID:', oldSubtypeId);
+            
             if (data && data.length > 0) {
                 console.log('Memproses ' + data.length + ' subtipe');
                 $.each(data, function(key, value) {
                     let selected = '';
-                    @if(old('incident_subtype_id'))
-                        if (value.id == {{ old('incident_subtype_id') ?? 'null' }}) {
-                            selected = 'selected';
-                        }
-                    @endif
+                    if (oldSubtypeId && value.id == oldSubtypeId) {
+                        selected = 'selected';
+                        console.log('Selected option found:', value.id, value.name);
+                    }
+                    
                     console.log('Menambahkan option:', value.id, value.name);
                     $('#incident_subtype_id').append('<option value="'+ value.id +'" '+ selected +'>'+ value.name +'</option>');
                 });
+                // Enable select after loading data
+                $('#incident_subtype_id').prop('disabled', false);
             } else {
                 console.log('Tidak ada subtipe tersedia untuk jenis insiden ini');
                 $('#incident_subtype_id').append('<option value="" disabled>Tidak ada subtipe tersedia</option>');
+                // Show warning to user
+                alert('Tidak ada subtipe tersedia untuk jenis insiden yang dipilih. Silakan pilih jenis insiden lain atau hubungi administrator.');
             }
             
             // Hapus kelas loading
@@ -348,6 +418,7 @@
         function resetSubtypes() {
             $('#incident_subtype_id').empty();
             $('#incident_subtype_id').append('<option value="">-- Pilih Subtipe Insiden --</option>');
+            $('#incident_subtype_id').removeClass('loading-subtypes');
         }
     });
 </script>

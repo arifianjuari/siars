@@ -18,4 +18,12 @@ class Profession extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the incidents associated with the profession.
+     */
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class, 'profesi_id');
+    }
 }

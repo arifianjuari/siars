@@ -125,6 +125,14 @@ class Incident extends Model
     }
 
     /**
+     * Get the profession associated with the incident.
+     */
+    public function profession()
+    {
+        return $this->belongsTo(Profession::class, 'profesi_id');
+    }
+
+    /**
      * Get the root cause analysis record associated with the incident.
      */
     public function analysis()

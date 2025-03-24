@@ -94,18 +94,24 @@ class IncidentController extends Controller
      */
     public function store(Request $request)
     {
+        // Tambahkan logging untuk memeriksa request
+        Log::info('Data request insiden:', [
+            'all_data' => $request->all(),
+            'incident_type_id' => $request->incident_type_id,
+            'incident_subtype_id' => $request->incident_subtype_id
+        ]);
+
         $validated = $request->validate([
             'tanggal_waktu_kejadian' => 'required|date',
-            'lokasi_id' => 'required|exists:locations,id',
-            'jenis_insiden_id' => 'required|exists:incident_types,id',
-            'incident_subtype_id' => 'nullable|exists:incident_subtypes,id',
+            'location_id' => 'required|exists:locations,id',
+            'incident_type_id' => 'required|exists:incident_types,id',
+            'incident_subtype_id' => 'required|exists:incident_subtypes,id',
             'nama_pasien' => 'required|string|max:255',
-            'no_rekam_medis' => 'required|string|max:50',
+            'no_rm' => 'required|string|max:50',
             'kronologis' => 'required|string',
             'tindakan_langsung' => 'required|string',
             'nama_pelapor' => 'required|string|max:255',
             'profesi_id' => 'required|exists:professions,id',
-            'pernah_terjadi_sebelumnya' => 'required|boolean',
             'dokumen_pendukung' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
         ]);
 
@@ -128,16 +134,15 @@ class IncidentController extends Controller
         $data = [
             'case_number' => $caseNumber,
             'tanggal_waktu_kejadian' => $validated['tanggal_waktu_kejadian'],
-            'location_id' => $validated['lokasi_id'],
-            'incident_type_id' => $validated['jenis_insiden_id'],
+            'location_id' => $validated['location_id'],
+            'incident_type_id' => $validated['incident_type_id'],
             'incident_subtype_id' => $validated['incident_subtype_id'],
             'nama_pasien' => $validated['nama_pasien'],
-            'no_rm' => $validated['no_rekam_medis'],
+            'no_rm' => $validated['no_rm'],
             'kronologis' => $validated['kronologis'],
             'tindakan_langsung' => $validated['tindakan_langsung'],
             'nama_pelapor' => $validated['nama_pelapor'],
             'profesi_id' => $validated['profesi_id'],
-            'pernah_terjadi_sebelumnya' => $validated['pernah_terjadi_sebelumnya'],
             'reporter_id' => Auth::id(),
             'status' => 'Baru'
         ];
@@ -187,7 +192,7 @@ class IncidentController extends Controller
             'tanggal_waktu_kejadian' => 'required|date',
             'location_id' => 'required|exists:locations,id',
             'incident_type_id' => 'required|exists:incident_types,id',
-            'incident_subtype_id' => 'nullable|exists:incident_subtypes,id',
+            'incident_subtype_id' => 'required|exists:incident_subtypes,id',
             'nama_pasien' => 'required|string|max:255',
             'no_rm' => 'required|string|max:50',
             'kronologis' => 'required|string',
@@ -244,8 +249,8 @@ class IncidentController extends Controller
                 Storage::delete('public/documents/incidents/' . $incident->handling_document);
             }
 
-            // Hapus insiden
-            $incident->delete();
+            // Hapus insiden (gunakan forceDelete untuk benar-benar menghapus dari database)
+            $incident->forceDelete();
 
             // Commit transaksi
             DB::commit();
@@ -271,7 +276,7 @@ class IncidentController extends Controller
     {
         try {
             // Debug request
-            info('Request getSubtypes: ' . json_encode([
+            Log::info('Request getSubtypes: ' . json_encode([
                 'incident_type_id' => $request->incident_type_id,
                 'all_params' => $request->all(),
                 'headers' => $request->header(),
@@ -280,7 +285,7 @@ class IncidentController extends Controller
             ]));
 
             if (!$request->has('incident_type_id') || !$request->incident_type_id) {
-                info('ID jenis insiden tidak valid');
+                Log::warning('ID jenis insiden tidak valid');
                 return response()->json(['error' => 'ID jenis insiden tidak valid'], 400);
             }
 
@@ -290,18 +295,26 @@ class IncidentController extends Controller
                 ->get(['id', 'name', 'description', 'is_active']);
 
             // Debug response
-            info('Subtypes found: ' . $subtypes->count() . ', data: ' . json_encode($subtypes));
+            Log::info('Subtypes found: ' . $subtypes->count() . ', data: ' . json_encode($subtypes));
+
+            if ($subtypes->isEmpty()) {
+                Log::warning('Tidak ada subtipe ditemukan untuk incident_type_id: ' . $request->incident_type_id);
+            }
 
             return response()->json($subtypes)
                 ->header('Content-Type', 'application/json')
                 ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT')
                 ->header('Access-Control-Allow-Origin', '*')
                 ->header('Access-Control-Allow-Methods', 'GET, OPTIONS');
         } catch (\Exception $e) {
             // Log error
-            info('Error in getSubtypes: ' . $e->getMessage());
+            Log::error('Error in getSubtypes: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
 
-            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500)
+                ->header('Content-Type', 'application/json')
+                ->header('Access-Control-Allow-Origin', '*');
         }
     }
 
@@ -397,11 +410,11 @@ class IncidentController extends Controller
         $html .= '
             <tr>
                 <td class="label">Kronologis Kejadian</td>
-                <td class="data">: ' . $incident->kronologis . '</td>
+                <td class="data">: ' . nl2br($incident->kronologis) . '</td>
             </tr>
             <tr>
                 <td class="label">Tindakan Langsung</td>
-                <td class="data">: ' . $incident->tindakan_langsung . '</td>
+                <td class="data">: ' . nl2br($incident->tindakan_langsung) . '</td>
             </tr>
             <tr>
                 <td class="label">Pelapor</td>
@@ -451,7 +464,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Faktor Tim</td>
-                    <td class="data">: ' . $incident->analysis->team_factors . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->team_factors) . '</td>
                 </tr>';
             }
 
@@ -459,7 +472,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Faktor Sistem</td>
-                    <td class="data">: ' . $incident->analysis->system_factors . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->system_factors) . '</td>
                 </tr>';
             }
 
@@ -467,7 +480,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Faktor Pasien</td>
-                    <td class="data">: ' . $incident->analysis->patient_factors . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->patient_factors) . '</td>
                 </tr>';
             }
 
@@ -475,18 +488,18 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Faktor Lingkungan</td>
-                    <td class="data">: ' . $incident->analysis->environmental_factors . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->environmental_factors) . '</td>
                 </tr>';
             }
 
             $html .= '
                 <tr>
                     <td class="label">Akar Masalah</td>
-                    <td class="data">: ' . $incident->analysis->root_causes . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->root_causes) . '</td>
                 </tr>
                 <tr>
                     <td class="label">Rekomendasi</td>
-                    <td class="data">: ' . $incident->analysis->recommendations . '</td>
+                    <td class="data">: ' . nl2br($incident->analysis->recommendations) . '</td>
                 </tr>
             </table>';
         }
@@ -509,7 +522,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Tindakan Penanganan</td>
-                    <td class="data">: ' . $incident->handling_actions . '</td>
+                    <td class="data">: ' . nl2br($incident->handling_actions) . '</td>
                 </tr>';
             }
 
@@ -517,7 +530,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Hasil Penanganan</td>
-                    <td class="data">: ' . $incident->handling_result . '</td>
+                    <td class="data">: ' . nl2br($incident->handling_result) . '</td>
                 </tr>';
             }
 
@@ -525,7 +538,7 @@ class IncidentController extends Controller
                 $html .= '
                 <tr>
                     <td class="label">Rencana Tindak Lanjut</td>
-                    <td class="data">: ' . $incident->follow_up_plan . '</td>
+                    <td class="data">: ' . nl2br($incident->follow_up_plan) . '</td>
                 </tr>';
             }
 

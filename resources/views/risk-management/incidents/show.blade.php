@@ -99,7 +99,7 @@ use Illuminate\Support\Facades\Storage;
                         </tr>
                         <tr>
                             <th>Kronologis</th>
-                            <td>{{ $incident->kronologis }}</td>
+                            <td>{!! nl2br(e($incident->kronologis)) !!}</td>
                         </tr>
                         <tr>
                             <th>Tindakan Langsung</th>
@@ -317,7 +317,7 @@ use Illuminate\Support\Facades\Storage;
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Kronologi Detail</h6>
-                            <p>{{ $incident->kronologis }}</p>
+                            <p>{!! nl2br(e($incident->kronologis)) !!}</p>
                             
                             <h6>Faktor Penyebab</h6>
                             <div class="mb-3">
