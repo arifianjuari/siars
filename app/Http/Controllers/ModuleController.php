@@ -36,7 +36,11 @@ class ModuleController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $isTenantAdmin = $user->hasRole('TenantAdmin');
+        // Cek apakah user memiliki role TenantAdmin
+        $isTenantAdmin = false;
+        if ($user->roles && $user->roles->contains('name', 'TenantAdmin')) {
+            $isTenantAdmin = true;
+        }
 
         // Dapatkan semua modul yang aktif
         $modules = Module::where('is_active', true)->get();
@@ -79,8 +83,33 @@ class ModuleController extends Controller
         $module = Module::findOrFail($id);
 
         // Validasi apakah user dapat melihat modul (kecuali superadmin)
-        if (!$user->isSuperadmin() && !$user->canViewModule($module)) {
+        $canViewModule = false;
+        $isSuperadmin = false;
+
+        // Cek apakah user superadmin
+        if ($user->roles && $user->roles->contains('name', 'Superadmin')) {
+            $isSuperadmin = true;
+        }
+
+        // Cek apakah user memiliki akses ke modul
+        if ($user->tenant_id) {
+            $moduleActive = $this->moduleService->isModuleActiveForTenant($module->id, $user->tenant_id);
+            if ($moduleActive) {
+                $canViewModule = true;
+            }
+        }
+
+        if (!$isSuperadmin && !$canViewModule) {
             abort(403, 'Anda tidak memiliki izin untuk melihat modul ini');
+        }
+
+        // Untuk modul-modul tertentu, redirect ke dashboard modul
+        if ($module->code === 'SNARS') {
+            return redirect()->route('snars.groups.index');
+        } elseif ($module->code === 'RISK') {
+            return redirect()->route('risk-management.dashboard');
+        } elseif ($module->code === 'DOC') {
+            return redirect()->route('document-management.dashboard');
         }
 
         $tenantHasModule = false;

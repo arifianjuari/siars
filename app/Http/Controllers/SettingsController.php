@@ -7,6 +7,8 @@ use App\Models\IncidentType;
 use App\Models\IncidentSubtype;
 use App\Models\Location;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SettingsController extends Controller
 {
@@ -256,5 +258,91 @@ class SettingsController extends Controller
     public function riskMatrix()
     {
         return view('risk-management.settings.risk-matrix');
+    }
+
+    /**
+     * Menampilkan halaman settings utama
+     */
+    public function index()
+    {
+        return view('risk-management.settings.index');
+    }
+
+    /**
+     * Menampilkan halaman kategori risiko
+     */
+    public function categories()
+    {
+        try {
+            // Debug untuk melihat apakah controller dipanggil
+            Log::info('SettingsController::categories() dipanggil');
+
+            // Cek tenant_id user terlebih dahulu
+            $tenantId = Auth::user()->tenant_id ?? null;
+            Log::info('Tenant ID: ' . ($tenantId ?? 'NULL'));
+
+            // Buat query dasar
+            $categories = \App\Models\RiskCategory::with('parent');
+
+            // Dapatkan semua data tanpa filter tenant_id untuk sementara
+            $categories = $categories->orderBy('name')->get();
+            Log::info('Jumlah kategori: ' . $categories->count());
+
+            // Cek apakah view ada
+            $viewName = 'risk-management.settings.categories';
+            $viewExists = view()->exists($viewName);
+            Log::info('View ' . $viewName . ' exists: ' . ($viewExists ? 'Yes' : 'No'));
+
+            if (!$viewExists) {
+                abort(500, 'View tidak ditemukan: ' . $viewName);
+            }
+
+            return view($viewName, compact('categories'));
+        } catch (\Exception $e) {
+            Log::error('Error di SettingsController::categories(): ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->view('errors.custom', [
+                'message' => 'Terjadi kesalahan saat menampilkan kategori risiko: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Menampilkan halaman faktor penyebab risiko
+     */
+    public function factors()
+    {
+        try {
+            // Debug untuk melihat apakah controller dipanggil
+            Log::info('SettingsController::factors() dipanggil');
+
+            // Cek tenant_id user terlebih dahulu
+            $tenantId = Auth::user()->tenant_id ?? null;
+            Log::info('Tenant ID: ' . ($tenantId ?? 'NULL'));
+
+            // Buat query dasar
+            $factors = \App\Models\RiskFactor::query();
+
+            // Dapatkan semua data tanpa filter tenant_id untuk sementara
+            $factors = $factors->get();
+            Log::info('Jumlah faktor: ' . $factors->count());
+
+            // Cek apakah view ada
+            $viewName = 'risk-management.settings.factors';
+            $viewExists = view()->exists($viewName);
+            Log::info('View ' . $viewName . ' exists: ' . ($viewExists ? 'Yes' : 'No'));
+
+            if (!$viewExists) {
+                abort(500, 'View tidak ditemukan: ' . $viewName);
+            }
+
+            return view($viewName, compact('factors'));
+        } catch (\Exception $e) {
+            Log::error('Error di SettingsController::factors(): ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->view('errors.custom', [
+                'message' => 'Terjadi kesalahan saat menampilkan faktor penyebab risiko: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

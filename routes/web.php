@@ -100,148 +100,152 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // SNARS Module Routes
-Route::middleware(['auth', 'verified', 'module.active:SNARS'])->prefix('snars')->name('snars.')->group(function () {
-    // SnarsGroup routes
-    Route::resource('groups', SnarsGroupController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+Route::middleware(['auth', 'verified'])
+    ->prefix('snars')
+    ->name('snars.')
+    ->middleware(\App\Http\Middleware\ModuleActiveMiddleware::class . ':SNARS')
+    ->group(function () {
+        // SnarsGroup routes
+        Route::resource('groups', SnarsGroupController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
 
-    // SnarsGroup routes yang memerlukan role khusus (Superadmin atau ManajemenEksekutif)
-    Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif'])->group(function () {
-        Route::get('groups/create', [SnarsGroupController::class, 'create'])->name('groups.create');
-        Route::post('groups', [SnarsGroupController::class, 'store'])->name('groups.store');
-        Route::get('groups/{group}/edit', [SnarsGroupController::class, 'edit'])->name('groups.edit');
-        Route::put('groups/{group}', [SnarsGroupController::class, 'update'])->name('groups.update');
-        Route::delete('groups/{group}', [SnarsGroupController::class, 'destroy'])->name('groups.destroy');
-        Route::post('groups/update-order', [SnarsGroupController::class, 'updateOrder'])->name('groups.update-order');
-        Route::patch('groups/{id}/toggle-active', [SnarsGroupController::class, 'toggleActive'])->name('groups.toggle-active');
+        // SnarsGroup routes yang memerlukan role khusus (Superadmin atau ManajemenEksekutif)
+        Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif'])->group(function () {
+            Route::get('groups/create', [SnarsGroupController::class, 'create'])->name('groups.create');
+            Route::post('groups', [SnarsGroupController::class, 'store'])->name('groups.store');
+            Route::get('groups/{group}/edit', [SnarsGroupController::class, 'edit'])->name('groups.edit');
+            Route::put('groups/{group}', [SnarsGroupController::class, 'update'])->name('groups.update');
+            Route::delete('groups/{group}', [SnarsGroupController::class, 'destroy'])->name('groups.destroy');
+            Route::post('groups/update-order', [SnarsGroupController::class, 'updateOrder'])->name('groups.update-order');
+            Route::patch('groups/{id}/toggle-active', [SnarsGroupController::class, 'toggleActive'])->name('groups.toggle-active');
+        });
+
+        // SnarsChapter routes
+        Route::resource('chapters', SnarsChapterController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+
+        // SnarsChapter routes yang memerlukan role khusus (bukan Staf)
+        Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
+            Route::get('chapters/create', [SnarsChapterController::class, 'create'])->name('chapters.create');
+            Route::post('chapters', [SnarsChapterController::class, 'store'])->name('chapters.store');
+            Route::get('chapters/{chapter}/edit', [SnarsChapterController::class, 'edit'])->name('chapters.edit');
+            Route::put('chapters/{chapter}', [SnarsChapterController::class, 'update'])->name('chapters.update');
+            Route::delete('chapters/{chapter}', [SnarsChapterController::class, 'destroy'])->name('chapters.destroy');
+            Route::post('chapters/update-order', [SnarsChapterController::class, 'updateOrder'])->name('chapters.update-order');
+            Route::patch('chapters/{id}/toggle-active', [SnarsChapterController::class, 'toggleActive'])->name('chapters.toggle-active');
+        });
+
+        // SnarsStandard routes
+        Route::resource('standards', SnarsStandardController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+
+        // SnarsStandard routes yang memerlukan role khusus (bukan Staf)
+        Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
+            Route::get('standards/create', [SnarsStandardController::class, 'create'])->name('standards.create');
+            Route::post('standards', [SnarsStandardController::class, 'store'])->name('standards.store');
+            Route::get('standards/{standard}/edit', [SnarsStandardController::class, 'edit'])->name('standards.edit');
+            Route::put('standards/{standard}', [SnarsStandardController::class, 'update'])->name('standards.update');
+            Route::delete('standards/{standard}', [SnarsStandardController::class, 'destroy'])->name('standards.destroy');
+            Route::post('standards/update-order', [SnarsStandardController::class, 'updateOrder'])->name('standards.update-order');
+            Route::patch('standards/{id}/toggle-active', [SnarsStandardController::class, 'toggleActive'])->name('standards.toggle-active');
+        });
+
+        // SnarsAssessmentElement routes
+        Route::resource('assessment-elements', SnarsAssessmentElementController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
+
+        // SnarsAssessmentElement routes yang memerlukan role khusus (bukan Staf)
+        Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
+            Route::get('assessment-elements/create', [SnarsAssessmentElementController::class, 'create'])->name('assessment-elements.create');
+            Route::post('assessment-elements', [SnarsAssessmentElementController::class, 'store'])->name('assessment-elements.store');
+            Route::get('assessment-elements/{assessment_element}/edit', [SnarsAssessmentElementController::class, 'edit'])->name('assessment-elements.edit');
+            Route::put('assessment-elements/{assessment_element}', [SnarsAssessmentElementController::class, 'update'])->name('assessment-elements.update');
+            Route::delete('assessment-elements/{assessment_element}', [SnarsAssessmentElementController::class, 'destroy'])->name('assessment-elements.destroy');
+            Route::post('assessment-elements/update-order', [SnarsAssessmentElementController::class, 'updateOrder'])->name('assessment-elements.update-order');
+            Route::patch('assessment-elements/{id}/toggle-active', [SnarsAssessmentElementController::class, 'toggleActive'])->name('assessment-elements.toggle-active');
+        });
+
+        // SnarsDocumentType routes
+        Route::resource('document-types', SnarsDocumentTypeController::class);
+        Route::patch('document-types/{id}/toggle-active', [SnarsDocumentTypeController::class, 'toggleActive'])->name('document-types.toggle-active');
+
+        // SnarsRequiredDocument routes
+        Route::resource('required-documents', SnarsRequiredDocumentController::class);
+        Route::patch('required-documents/{id}/toggle-mandatory', [SnarsRequiredDocumentController::class, 'toggleMandatory'])->name('required-documents.toggle-mandatory');
+
+        // SnarsDocument routes
+        Route::resource('documents', SnarsDocumentController::class);
+        Route::post('documents/upload', [SnarsDocumentController::class, 'upload'])->name('documents.upload');
+        Route::get('documents/{id}/download', [SnarsDocumentController::class, 'download'])->name('documents.download');
+        Route::post('documents/{id}/version', [SnarsDocumentController::class, 'createVersion'])->name('documents.create-version');
+        Route::get('documents/{id}/versions', [SnarsDocumentController::class, 'listVersions'])->name('documents.list-versions');
+
+        // SnarsAssessmentPeriod routes
+        Route::resource('assessment-periods', SnarsAssessmentPeriodController::class);
+        Route::patch('assessment-periods/{id}/toggle-active', [SnarsAssessmentPeriodController::class, 'toggleActive'])->name('assessment-periods.toggle-active');
+
+        // SnarsAssessment routes
+        Route::resource('assessments', SnarsAssessmentController::class);
+        Route::patch('assessments/{id}/change-status', [SnarsAssessmentController::class, 'changeStatus'])->name('assessments.change-status');
+
+        // SnarsAssessmentScore routes
+        Route::resource('assessment-scores', SnarsAssessmentScoreController::class);
+        Route::post('assessment-scores/bulk-update', [SnarsAssessmentScoreController::class, 'bulkUpdate'])->name('assessment-scores.bulk-update');
+
+        // SnarsFinding routes
+        Route::resource('findings', SnarsFindingController::class);
+        Route::patch('findings/{id}/change-status', [SnarsFindingController::class, 'changeStatus'])->name('findings.change-status');
+
+        // SnarsMonitoringSchedule routes
+        Route::resource('monitoring-schedules', SnarsMonitoringScheduleController::class);
+        Route::patch('monitoring-schedules/{id}/change-status', [SnarsMonitoringScheduleController::class, 'changeStatus'])->name('monitoring-schedules.change-status');
+
+        // SnarsMonitoringResult routes
+        Route::resource('monitoring-results', SnarsMonitoringResultController::class);
+
+        // SnarsCompliance routes
+        Route::resource('compliance', SnarsComplianceController::class);
+        Route::get('compliance/report', [SnarsComplianceController::class, 'report'])->name('compliance.report');
+        Route::get('compliance/export', [SnarsComplianceController::class, 'export'])->name('compliance.export');
+
+        // SnarsDashboardWidget routes
+        Route::resource('dashboard-widgets', SnarsDashboardWidgetController::class);
+        Route::post('dashboard-widgets/update-positions', [SnarsDashboardWidgetController::class, 'updatePositions'])->name('dashboard-widgets.update-positions');
+
+        // SnarsVersion routes
+        Route::resource('versions', SnarsVersionController::class);
+        Route::patch('versions/{id}/toggle-active', [SnarsVersionController::class, 'toggleActive'])->name('versions.toggle-active');
+
+        // SnarsUpdate routes
+        Route::resource('updates', SnarsUpdateController::class);
+
+        // SnarsNotification routes
+        Route::resource('notifications', SnarsNotificationController::class);
+        Route::patch('notifications/{id}/mark-as-read', [SnarsNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::patch('notifications/{id}/mark-as-unread', [SnarsNotificationController::class, 'markAsUnread'])->name('notifications.mark-as-unread');
+        Route::patch('notifications/mark-all-as-read', [SnarsNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+
+        // SnarsSupportingDocument routes
+        Route::resource('supporting-documents', SnarsSupportingDocumentController::class);
+
+        // Rute tambahan untuk pembuatan dokumen pendukung
+        Route::get('create-document', [SnarsSupportingDocumentCreateController::class, 'index'])->name('supporting-documents.create-form');
+        Route::post('store-document', [SnarsSupportingDocumentCreateController::class, 'store'])->name('supporting-documents.store-form');
+        Route::get('supporting-documents/{id}/download', [SnarsSupportingDocumentController::class, 'download'])->name('supporting-documents.download');
+        Route::get('supporting-documents/{id}/history', [SnarsSupportingDocumentController::class, 'history'])->name('supporting-documents.history');
+        Route::get('supporting-documents/{id}/create-version', [SnarsSupportingDocumentController::class, 'createNewVersion'])->name('supporting-documents.create-version');
+        Route::post('supporting-documents/{id}/store-version', [SnarsSupportingDocumentController::class, 'storeNewVersion'])->name('supporting-documents.store-version');
+        Route::patch('supporting-documents/{id}/submit-for-review', [SnarsSupportingDocumentController::class, 'submitForReview'])->name('supporting-documents.submit-for-review');
+        Route::patch('supporting-documents/{id}/approve', [SnarsSupportingDocumentController::class, 'approve'])->name('supporting-documents.approve');
+        Route::patch('supporting-documents/{id}/reject', [SnarsSupportingDocumentController::class, 'reject'])->name('supporting-documents.reject');
+
+        // SNARS Dashboard routes
+        Route::get('dashboard', [SnarsDashboardController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/compliance-data', [SnarsDashboardController::class, 'getComplianceData'])->name('dashboard.compliance-data');
+        Route::get('dashboard/upcoming-schedules', [SnarsDashboardController::class, 'getUpcomingSchedules'])->name('dashboard.upcoming-schedules');
+        Route::get('dashboard/recent-findings', [SnarsDashboardController::class, 'getRecentFindings'])->name('dashboard.recent-findings');
+        Route::get('dashboard/document-statistics', [SnarsDashboardController::class, 'getDocumentStatistics'])->name('dashboard.document-statistics');
+
+        Route::put('/survey-date/update', [SnarsSurveyDateController::class, 'update'])
+            ->name('survey-date.update')
+            ->middleware(['auth', CheckRole::class . ':ManajemenEksekutif']);
     });
-
-    // SnarsChapter routes
-    Route::resource('chapters', SnarsChapterController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
-
-    // SnarsChapter routes yang memerlukan role khusus (bukan Staf)
-    Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
-        Route::get('chapters/create', [SnarsChapterController::class, 'create'])->name('chapters.create');
-        Route::post('chapters', [SnarsChapterController::class, 'store'])->name('chapters.store');
-        Route::get('chapters/{chapter}/edit', [SnarsChapterController::class, 'edit'])->name('chapters.edit');
-        Route::put('chapters/{chapter}', [SnarsChapterController::class, 'update'])->name('chapters.update');
-        Route::delete('chapters/{chapter}', [SnarsChapterController::class, 'destroy'])->name('chapters.destroy');
-        Route::post('chapters/update-order', [SnarsChapterController::class, 'updateOrder'])->name('chapters.update-order');
-        Route::patch('chapters/{id}/toggle-active', [SnarsChapterController::class, 'toggleActive'])->name('chapters.toggle-active');
-    });
-
-    // SnarsStandard routes
-    Route::resource('standards', SnarsStandardController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
-
-    // SnarsStandard routes yang memerlukan role khusus (bukan Staf)
-    Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
-        Route::get('standards/create', [SnarsStandardController::class, 'create'])->name('standards.create');
-        Route::post('standards', [SnarsStandardController::class, 'store'])->name('standards.store');
-        Route::get('standards/{standard}/edit', [SnarsStandardController::class, 'edit'])->name('standards.edit');
-        Route::put('standards/{standard}', [SnarsStandardController::class, 'update'])->name('standards.update');
-        Route::delete('standards/{standard}', [SnarsStandardController::class, 'destroy'])->name('standards.destroy');
-        Route::post('standards/update-order', [SnarsStandardController::class, 'updateOrder'])->name('standards.update-order');
-        Route::patch('standards/{id}/toggle-active', [SnarsStandardController::class, 'toggleActive'])->name('standards.toggle-active');
-    });
-
-    // SnarsAssessmentElement routes
-    Route::resource('assessment-elements', SnarsAssessmentElementController::class)->except(['create', 'store', 'edit', 'update', 'destroy']);
-
-    // SnarsAssessmentElement routes yang memerlukan role khusus (bukan Staf)
-    Route::middleware([CheckRole::class . ':Superadmin,ManajemenEksekutif,ManajemenStrategis,ManajemenOperasional'])->group(function () {
-        Route::get('assessment-elements/create', [SnarsAssessmentElementController::class, 'create'])->name('assessment-elements.create');
-        Route::post('assessment-elements', [SnarsAssessmentElementController::class, 'store'])->name('assessment-elements.store');
-        Route::get('assessment-elements/{assessment_element}/edit', [SnarsAssessmentElementController::class, 'edit'])->name('assessment-elements.edit');
-        Route::put('assessment-elements/{assessment_element}', [SnarsAssessmentElementController::class, 'update'])->name('assessment-elements.update');
-        Route::delete('assessment-elements/{assessment_element}', [SnarsAssessmentElementController::class, 'destroy'])->name('assessment-elements.destroy');
-        Route::post('assessment-elements/update-order', [SnarsAssessmentElementController::class, 'updateOrder'])->name('assessment-elements.update-order');
-        Route::patch('assessment-elements/{id}/toggle-active', [SnarsAssessmentElementController::class, 'toggleActive'])->name('assessment-elements.toggle-active');
-    });
-
-    // SnarsDocumentType routes
-    Route::resource('document-types', SnarsDocumentTypeController::class);
-    Route::patch('document-types/{id}/toggle-active', [SnarsDocumentTypeController::class, 'toggleActive'])->name('document-types.toggle-active');
-
-    // SnarsRequiredDocument routes
-    Route::resource('required-documents', SnarsRequiredDocumentController::class);
-    Route::patch('required-documents/{id}/toggle-mandatory', [SnarsRequiredDocumentController::class, 'toggleMandatory'])->name('required-documents.toggle-mandatory');
-
-    // SnarsDocument routes
-    Route::resource('documents', SnarsDocumentController::class);
-    Route::post('documents/upload', [SnarsDocumentController::class, 'upload'])->name('documents.upload');
-    Route::get('documents/{id}/download', [SnarsDocumentController::class, 'download'])->name('documents.download');
-    Route::post('documents/{id}/version', [SnarsDocumentController::class, 'createVersion'])->name('documents.create-version');
-    Route::get('documents/{id}/versions', [SnarsDocumentController::class, 'listVersions'])->name('documents.list-versions');
-
-    // SnarsAssessmentPeriod routes
-    Route::resource('assessment-periods', SnarsAssessmentPeriodController::class);
-    Route::patch('assessment-periods/{id}/toggle-active', [SnarsAssessmentPeriodController::class, 'toggleActive'])->name('assessment-periods.toggle-active');
-
-    // SnarsAssessment routes
-    Route::resource('assessments', SnarsAssessmentController::class);
-    Route::patch('assessments/{id}/change-status', [SnarsAssessmentController::class, 'changeStatus'])->name('assessments.change-status');
-
-    // SnarsAssessmentScore routes
-    Route::resource('assessment-scores', SnarsAssessmentScoreController::class);
-    Route::post('assessment-scores/bulk-update', [SnarsAssessmentScoreController::class, 'bulkUpdate'])->name('assessment-scores.bulk-update');
-
-    // SnarsFinding routes
-    Route::resource('findings', SnarsFindingController::class);
-    Route::patch('findings/{id}/change-status', [SnarsFindingController::class, 'changeStatus'])->name('findings.change-status');
-
-    // SnarsMonitoringSchedule routes
-    Route::resource('monitoring-schedules', SnarsMonitoringScheduleController::class);
-    Route::patch('monitoring-schedules/{id}/change-status', [SnarsMonitoringScheduleController::class, 'changeStatus'])->name('monitoring-schedules.change-status');
-
-    // SnarsMonitoringResult routes
-    Route::resource('monitoring-results', SnarsMonitoringResultController::class);
-
-    // SnarsCompliance routes
-    Route::resource('compliance', SnarsComplianceController::class);
-    Route::get('compliance/report', [SnarsComplianceController::class, 'report'])->name('compliance.report');
-    Route::get('compliance/export', [SnarsComplianceController::class, 'export'])->name('compliance.export');
-
-    // SnarsDashboardWidget routes
-    Route::resource('dashboard-widgets', SnarsDashboardWidgetController::class);
-    Route::post('dashboard-widgets/update-positions', [SnarsDashboardWidgetController::class, 'updatePositions'])->name('dashboard-widgets.update-positions');
-
-    // SnarsVersion routes
-    Route::resource('versions', SnarsVersionController::class);
-    Route::patch('versions/{id}/toggle-active', [SnarsVersionController::class, 'toggleActive'])->name('versions.toggle-active');
-
-    // SnarsUpdate routes
-    Route::resource('updates', SnarsUpdateController::class);
-
-    // SnarsNotification routes
-    Route::resource('notifications', SnarsNotificationController::class);
-    Route::patch('notifications/{id}/mark-as-read', [SnarsNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
-    Route::patch('notifications/{id}/mark-as-unread', [SnarsNotificationController::class, 'markAsUnread'])->name('notifications.mark-as-unread');
-    Route::patch('notifications/mark-all-as-read', [SnarsNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
-
-    // SnarsSupportingDocument routes
-    Route::resource('supporting-documents', SnarsSupportingDocumentController::class);
-
-    // Rute tambahan untuk pembuatan dokumen pendukung
-    Route::get('create-document', [SnarsSupportingDocumentCreateController::class, 'index'])->name('supporting-documents.create-form');
-    Route::post('store-document', [SnarsSupportingDocumentCreateController::class, 'store'])->name('supporting-documents.store-form');
-    Route::get('supporting-documents/{id}/download', [SnarsSupportingDocumentController::class, 'download'])->name('supporting-documents.download');
-    Route::get('supporting-documents/{id}/history', [SnarsSupportingDocumentController::class, 'history'])->name('supporting-documents.history');
-    Route::get('supporting-documents/{id}/create-version', [SnarsSupportingDocumentController::class, 'createNewVersion'])->name('supporting-documents.create-version');
-    Route::post('supporting-documents/{id}/store-version', [SnarsSupportingDocumentController::class, 'storeNewVersion'])->name('supporting-documents.store-version');
-    Route::patch('supporting-documents/{id}/submit-for-review', [SnarsSupportingDocumentController::class, 'submitForReview'])->name('supporting-documents.submit-for-review');
-    Route::patch('supporting-documents/{id}/approve', [SnarsSupportingDocumentController::class, 'approve'])->name('supporting-documents.approve');
-    Route::patch('supporting-documents/{id}/reject', [SnarsSupportingDocumentController::class, 'reject'])->name('supporting-documents.reject');
-
-    // SNARS Dashboard routes
-    Route::get('dashboard', [SnarsDashboardController::class, 'index'])->name('dashboard');
-    Route::get('dashboard/compliance-data', [SnarsDashboardController::class, 'getComplianceData'])->name('dashboard.compliance-data');
-    Route::get('dashboard/upcoming-schedules', [SnarsDashboardController::class, 'getUpcomingSchedules'])->name('dashboard.upcoming-schedules');
-    Route::get('dashboard/recent-findings', [SnarsDashboardController::class, 'getRecentFindings'])->name('dashboard.recent-findings');
-    Route::get('dashboard/document-statistics', [SnarsDashboardController::class, 'getDocumentStatistics'])->name('dashboard.document-statistics');
-
-    Route::put('/survey-date/update', [SnarsSurveyDateController::class, 'update'])
-        ->name('survey-date.update')
-        ->middleware(['auth', CheckRole::class . ':ManajemenEksekutif']);
-});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -397,86 +401,120 @@ Route::middleware(['auth', 'role:TenantAdmin'])->prefix('tenantadmin')->name('te
     Route::post('/modules/request-activation', [App\Http\Controllers\TenantAdminController::class, 'requestModuleActivation'])->name('modules.request-activation');
 });
 
-// Modul SNARS
-Route::prefix('snars')->middleware(['auth', 'verified', 'check.module.activation:SNARS'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('snars.dashboard');
-    })->name('snars.dashboard');
-});
-
 // Modul Manajemen Risiko
 Route::middleware(['auth'])->group(function () {
     // Route prefix risk-management
-    Route::prefix('risk-management')->name('risk-management.')->middleware(['auth', 'web'])->group(function () {
-        // Get subtypes (endpoint API) - ditempatkan di atas rute lain agar tidak konflik
-        Route::get('/incidents/get-subtypes', [IncidentController::class, 'getSubtypes'])
-            ->name('incidents.get-subtypes')
-            ->withoutMiddleware(['auth']);
+    Route::middleware(['auth', 'verified'])
+        ->prefix('risk-management')
+        ->name('risk-management.')
+        ->middleware(\App\Http\Middleware\ModuleActiveMiddleware::class . ':RISK')
+        ->group(function () {
+            // Get subtypes (endpoint API) - ditempatkan di atas rute lain agar tidak konflik
+            Route::get('/incidents/get-subtypes', [IncidentController::class, 'getSubtypes'])
+                ->name('incidents.get-subtypes')
+                ->withoutMiddleware(['auth']);
 
-        // Insiden
-        Route::resource('incidents', IncidentController::class);
+            // Insiden
+            Route::resource('incidents', IncidentController::class);
 
-        // Dashboard Manajemen Risiko
-        Route::get('/dashboard', [RiskManagementController::class, 'dashboard'])->name('dashboard');
+            // Dashboard Manajemen Risiko
+            Route::get('/dashboard', [RiskManagementController::class, 'dashboard'])->name('dashboard');
 
-        // Rute Insiden
-        Route::resource('incidents', IncidentController::class);
-        Route::get('incidents/{incident}/export-pdf', [IncidentController::class, 'exportPdf'])->name('incidents.export-pdf');
-        Route::post('incidents/{incident}/generate-qr', [IncidentController::class, 'generateQrCode'])->name('incidents.generate-qr');
-        Route::get('verify-incident/{caseNumber}', [IncidentController::class, 'verify'])->name('incidents.verify');
-        Route::delete('incidents/{incident}/delete-document', [IncidentController::class, 'deleteDocument'])->name('incidents.delete-document');
-        Route::delete('incidents/{incident}/delete-evaluation-document', [IncidentController::class, 'deleteEvaluationDocument'])->name('incidents.delete-evaluation-document');
+            // Rute Insiden
+            Route::resource('incidents', IncidentController::class);
+            Route::get('incidents/{incident}/export-pdf', [IncidentController::class, 'exportPdf'])->name('incidents.export-pdf');
+            Route::post('incidents/{incident}/generate-qr', [IncidentController::class, 'generateQrCode'])->name('incidents.generate-qr');
+            Route::get('verify-incident/{caseNumber}', [IncidentController::class, 'verify'])->name('incidents.verify');
+            Route::delete('incidents/{incident}/delete-document', [IncidentController::class, 'deleteDocument'])->name('incidents.delete-document');
+            Route::delete('incidents/{incident}/delete-evaluation-document', [IncidentController::class, 'deleteEvaluationDocument'])->name('incidents.delete-evaluation-document');
 
-        // Klasifikasi Risiko
-        Route::resource('classifications', App\Http\Controllers\ClassificationController::class);
+            // Klasifikasi Risiko
+            Route::resource('categories', App\Http\Controllers\RiskManagement\RiskCategoryController::class);
 
-        // Analisis Akar Masalah
-        Route::resource('analysis', App\Http\Controllers\RootCauseAnalysisController::class, [
-            'parameters' => ['analysis' => 'analysis']
-        ]);
+            // Klasifikasi Insiden
+            Route::resource('classifications', App\Http\Controllers\ClassificationController::class);
 
-        // Monitoring dan Penanganan
-        Route::resource('monitoring', App\Http\Controllers\MonitoringController::class);
+            // Analisis Akar Masalah
+            Route::resource('analysis', App\Http\Controllers\RootCauseAnalysisController::class, [
+                'parameters' => ['analysis' => 'analysis']
+            ]);
 
-        // Kategori Risiko
-        Route::resource('categories', App\Http\Controllers\RiskCategoryController::class);
+            // Monitoring dan Penanganan
+            Route::resource('monitoring', App\Http\Controllers\MonitoringController::class);
 
-        // Penilaian Risiko
-        Route::resource('reviews', App\Http\Controllers\RiskReviewController::class);
+            // Penilaian Risiko
+            Route::resource('reviews', App\Http\Controllers\RiskReviewController::class);
 
-        // Laporan Risiko
-        Route::get('/reports', [App\Http\Controllers\RiskReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/{type}', [App\Http\Controllers\RiskReportController::class, 'show'])->name('reports.show');
-        Route::post('/reports/{type}/pdf', [App\Http\Controllers\RiskReportController::class, 'generatePdf'])->name('reports.pdf');
-        Route::post('/reports/{type}/excel', [App\Http\Controllers\RiskReportController::class, 'generateExcel'])->name('reports.excel');
-        Route::post('/reports/export', [App\Http\Controllers\RiskReportController::class, 'export'])->name('reports.export');
+            // Laporan Risiko
+            Route::get('/reports', [App\Http\Controllers\RiskReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/{type}', [App\Http\Controllers\RiskReportController::class, 'show'])->name('reports.show');
+            Route::post('/reports/{type}/pdf', [App\Http\Controllers\RiskReportController::class, 'generatePdf'])->name('reports.pdf');
+            Route::post('/reports/{type}/excel', [App\Http\Controllers\RiskReportController::class, 'generateExcel'])->name('reports.excel');
+            Route::post('/reports/export', [App\Http\Controllers\RiskReportController::class, 'export'])->name('reports.export');
 
-        // Faktor Penyebab Risiko
-        Route::resource('factors', App\Http\Controllers\RiskFactorController::class);
+            // Faktor Penyebab Risiko
+            Route::resource('factors', App\Http\Controllers\RiskFactorController::class);
 
-        // Mitigasi Risiko
-        Route::resource('mitigations', App\Http\Controllers\RiskMitigationController::class);
+            // Mitigasi Risiko
+            Route::resource('mitigations', App\Http\Controllers\RiskMitigationController::class);
 
-        // Pengaturan
-        Route::get('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'incidentTypes'])->name('settings.incident-types');
-        Route::post('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'storeIncidentType'])->name('settings.incident-types.store');
-        Route::put('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentType'])->name('settings.incident-types.update');
-        Route::delete('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentType'])->name('settings.incident-types.delete');
+            // Pengaturan
+            Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
 
-        Route::post('/settings/incident-subtypes', [App\Http\Controllers\SettingsController::class, 'storeIncidentSubtype'])->name('settings.incident-subtypes.store');
-        Route::put('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentSubtype'])->name('settings.incident-subtypes.update');
-        Route::delete('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentSubtype'])->name('settings.incident-subtypes.delete');
+            Route::get('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'incidentTypes'])->name('settings.incident-types');
+            Route::post('/settings/incident-types', [App\Http\Controllers\SettingsController::class, 'storeIncidentType'])->name('settings.incident-types.store');
+            Route::put('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentType'])->name('settings.incident-types.update');
+            Route::delete('/settings/incident-types/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentType'])->name('settings.incident-types.delete');
 
-        Route::get('/settings/locations', [App\Http\Controllers\SettingsController::class, 'locations'])->name('settings.locations');
-        Route::post('/settings/locations', [App\Http\Controllers\SettingsController::class, 'storeLocation'])->name('settings.locations.store');
-        Route::put('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'updateLocation'])->name('settings.locations.update');
-        Route::delete('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'deleteLocation'])->name('settings.locations.delete');
+            Route::post('/settings/incident-subtypes', [App\Http\Controllers\SettingsController::class, 'storeIncidentSubtype'])->name('settings.incident-subtypes.store');
+            Route::put('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'updateIncidentSubtype'])->name('settings.incident-subtypes.update');
+            Route::delete('/settings/incident-subtypes/{id}', [App\Http\Controllers\SettingsController::class, 'deleteIncidentSubtype'])->name('settings.incident-subtypes.delete');
 
-        Route::get('/settings/risk-levels', [App\Http\Controllers\SettingsController::class, 'riskLevels'])->name('settings.risk-levels');
+            Route::get('/settings/locations', [App\Http\Controllers\SettingsController::class, 'locations'])->name('settings.locations');
+            Route::post('/settings/locations', [App\Http\Controllers\SettingsController::class, 'storeLocation'])->name('settings.locations.store');
+            Route::put('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'updateLocation'])->name('settings.locations.update');
+            Route::delete('/settings/locations/{id}', [App\Http\Controllers\SettingsController::class, 'deleteLocation'])->name('settings.locations.delete');
 
-        // Tambah route untuk matriks risiko
-        Route::get('/settings/risk-matrix', [App\Http\Controllers\SettingsController::class, 'riskMatrix'])->name('settings.risk-matrix');
-    });
+            Route::get('/settings/risk-levels', [App\Http\Controllers\SettingsController::class, 'riskLevels'])->name('settings.risk-levels');
+
+            // Tambah route untuk matriks risiko
+            Route::get('/settings/risk-matrix', [App\Http\Controllers\SettingsController::class, 'riskMatrix'])->name('settings.risk-matrix');
+
+            // Tambahkan resource route untuk kategori dan faktor dalam settings
+            Route::prefix('settings')->name('settings.')->group(function () {
+                Route::resource('categories', App\Http\Controllers\RiskManagement\RiskCategoryController::class);
+                Route::resource('factors', App\Http\Controllers\RiskFactorController::class);
+            });
+
+            // Route view untuk kategori dan faktor
+            Route::get('/settings/categories', [App\Http\Controllers\RiskManagement\CategorySettingsController::class, 'index'])->name('settings.categories.list');
+            Route::get('/settings/factors', [App\Http\Controllers\SettingsController::class, 'factors'])->name('settings.factors.list');
+        });
 });
+
+// Route untuk Modul Manajemen Dokumen
+Route::middleware(['auth', 'verified'])
+    ->prefix('document-management')
+    ->name('document-management.')
+    ->middleware(\App\Http\Middleware\ModuleActiveMiddleware::class . ':DOC')
+    ->group(function () {
+        // Dashboard
+        Route::get('/', [App\Http\Controllers\DocumentManagement\DocumentManagementController::class, 'dashboard'])->name('dashboard');
+
+        // Routes untuk Memo (Nota Dinas)
+        Route::resource('memos', App\Http\Controllers\DocumentManagement\MemoController::class);
+        Route::post('memos/{document}/publish', [App\Http\Controllers\DocumentManagement\MemoController::class, 'publish'])->name('memos.publish');
+
+        // Routes untuk Invitation (Undangan)
+        Route::resource('invitations', App\Http\Controllers\DocumentManagement\InvitationController::class);
+        Route::post('invitations/{document}/publish', [App\Http\Controllers\DocumentManagement\InvitationController::class, 'publish'])->name('invitations.publish');
+
+        // Routes untuk Meeting Minutes (Notulensi)
+        Route::resource('meeting-minutes', App\Http\Controllers\DocumentManagement\MeetingMinuteController::class);
+        Route::post('meeting-minutes/{document}/publish', [App\Http\Controllers\DocumentManagement\MeetingMinuteController::class, 'publish'])->name('meeting-minutes.publish');
+
+        // QR Code validation route
+        Route::get('verify-qr/{code}', [App\Http\Controllers\DocumentManagement\QrValidationController::class, 'verify'])->name('verify-qr');
+    });
 
 require __DIR__ . '/auth.php';

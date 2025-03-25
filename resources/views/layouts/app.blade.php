@@ -77,17 +77,17 @@
                                                     <i class="fas fa-table me-1"></i> Matriks Risiko
                                                 </a>
                                             </li>
+                                            <li>
+                                                <a href="{{ route('risk-management.settings.categories.list') }}" class="dropdown-item {{ request()->routeIs('risk-management.settings.categories.list') ? 'active' : '' }}">
+                                                    <i class="fas fa-tags me-1"></i> Kategori
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('risk-management.settings.factors.list') }}" class="dropdown-item {{ request()->routeIs('risk-management.settings.factors.list') ? 'active' : '' }}">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i> Faktor Penyebab
+                                                </a>
+                                            </li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a href="{{ route('risk-management.categories.index') }}" class="dropdown-item {{ request()->routeIs('risk-management.categories.*') ? 'active' : '' }}">
-                                                    <i class="fas fa-tags me-1"></i> Kategori Risiko
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('risk-management.factors.index') }}" class="dropdown-item {{ request()->routeIs('risk-management.factors.*') ? 'active' : '' }}">
-                                                    <i class="fas fa-diagnoses me-1"></i> Faktor Penyebab
-                                                </a>
-                                            </li>
                                         </ul>
                                     </div>
                                     

@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Contracts\Auditable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RiskCategory extends Model implements Auditable
 {
-    use HasFactory, HasUuids, \OwenIt\Auditing\Auditable;
+    use HasFactory, HasUuids, \OwenIt\Auditing\Auditable, SoftDeletes;
 
     /**
      * Tabel yang terkait dengan model.

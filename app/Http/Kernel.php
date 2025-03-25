@@ -65,10 +65,11 @@ class Kernel extends HttpKernel
         'user.active' => \App\Http\Middleware\CheckUserActiveMiddleware::class,
         'superadmin' => \App\Http\Middleware\SuperadminOnlyMiddleware::class,
         'tenant.access' => \App\Http\Middleware\TenantAccessMiddleware::class,
-        'module.active' => \App\Http\Middleware\CheckModuleActiveMiddleware::class,
+        'module.active' => \App\Http\Middleware\ModuleActiveMiddleware::class,
         'module.permission' => \App\Http\Middleware\CheckModulePermissionMiddleware::class,
         'checkrole' => \App\Http\Middleware\CheckRole::class,
         'tenant.check' => \App\Http\Middleware\CheckTenantOwnership::class,
+        'simple_tenant' => \App\Http\Middleware\SimpleTenantCheck::class,
         'check.module.activation' => \App\Http\Middleware\CheckModuleActiveMiddleware::class,
         'debug.ajax' => \App\Http\Middleware\DebugAjaxRequests::class,
     ];

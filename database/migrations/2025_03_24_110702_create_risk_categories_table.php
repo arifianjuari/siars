@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('incidents', function (Blueprint $table) {
-            $table->text('qr_code_base64')->nullable()->after('qr_code_path');
+        Schema::create('risk_categories', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('incidents', function (Blueprint $table) {
-            $table->dropColumn('qr_code_base64');
-        });
+        Schema::dropIfExists('risk_categories');
     }
 };

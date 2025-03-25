@@ -15,9 +15,22 @@ class RiskFactor extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'code',
+        'name',
+        'description',
+        'is_active',
+        'tenant_id',
         'report_id',
         'factor_type',
-        'description',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -26,5 +39,13 @@ class RiskFactor extends Model
     public function report()
     {
         return $this->belongsTo(RiskReport::class, 'report_id');
+    }
+
+    /**
+     * Scope untuk memfilter data yang aktif
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

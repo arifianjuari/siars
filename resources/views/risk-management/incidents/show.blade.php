@@ -189,16 +189,13 @@ use Illuminate\Support\Facades\Storage;
                     <h5 class="mb-0">QR Code Verifikasi</h5>
                 </div>
                 <div class="card-body text-center">
-                    @if($incident->qr_code_path || $incident->qr_code_base64)
+                    @if($incident->qr_code_path)
                         <div class="mb-3 d-flex justify-content-center">
-                            @if($incident->qr_code_path && Str::endsWith($incident->qr_code_path, '.svg'))
+                            @if(Str::endsWith($incident->qr_code_path, '.svg'))
                                 <!-- Tampilkan SVG secara langsung -->
                                 <div class="d-inline-block" style="width: 200px; height: 200px;">
                                     {!! Storage::disk('public')->exists($incident->qr_code_path) ? Storage::disk('public')->get($incident->qr_code_path) : '' !!}
                                 </div>
-                            @elseif($incident->qr_code_base64)
-                                <!-- Tampilkan QR code dari base64 jika tersedia -->
-                                <img src="data:image/svg+xml;base64,{{ $incident->qr_code_base64 }}" alt="QR Code Verifikasi" style="width: 200px; height: 200px;">
                             @else
                                 <!-- Fallback ke gambar normal -->
                                 <img src="{{ asset('storage/' . $incident->qr_code_path) }}" alt="QR Code Verifikasi" style="width: 200px; height: 200px;">

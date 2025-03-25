@@ -596,6 +596,7 @@ class IncidentController extends Controller
         $html .= '
             <div class="signature-line"></div>
             <p>' . (Auth::user()->position ?? 'Petugas') . '</p>
+            <p style="font-size: 9pt; color: #666;">Dibuat pada: ' . now()->format('d/m/Y H:i:s') . '</p>
         </div>';
 
         // Menulis HTML ke PDF
@@ -693,11 +694,6 @@ class IncidentController extends Controller
 
     public function generateQrCode(Incident $incident)
     {
-        // Pastikan komponen QR code tersedia
-        if (!class_exists('SimpleSoftwareIO\QrCode\Facades\QrCode')) {
-            return redirect()->back()->with('error', 'QR Code generator tidak tersedia, silakan install package simplesoftwareio/simple-qrcode terlebih dahulu.');
-        }
-
         try {
             // Buat URL untuk verifikasi dengan ID
             $qrContent = route('risk-management.incidents.verify', $incident->case_number);
@@ -721,11 +717,9 @@ class IncidentController extends Controller
             // Simpan file SVG
             file_put_contents($fullPath, $qrCodeSvg);
 
-            // Buat juga versi base64 untuk kasus di mana SVG tidak didukung
-            $qrCodeBase64 = base64_encode($qrCodeSvg);
+            // Update incident dengan path QR saja (tanpa base64)
             $incident->update([
-                'qr_code_path' => $qrPath,
-                'qr_code_base64' => $qrCodeBase64
+                'qr_code_path' => $qrPath
             ]);
 
             return redirect()->back()->with('success', 'QR Code berhasil dibuat dalam format SVG.');

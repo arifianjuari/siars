@@ -44,7 +44,6 @@ class Incident extends Model
         'profesi_id',
         'pernah_terjadi_sebelumnya',
         'qr_code_path',
-        'qr_code_base64',
         'nama_pelapor',
     ];
 
